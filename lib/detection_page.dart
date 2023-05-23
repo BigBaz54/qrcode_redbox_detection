@@ -10,6 +10,7 @@ import 'home_page.dart';
 import 'package:flutter/services.dart';
 import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
+import 'package:flutter_zxing/flutter_zxing.dart';  
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -69,6 +70,7 @@ class _DetectionPageState extends State<DetectionPage> {
   Future<Uint8List> takePic() async {
     var path = (await cameraController.takePicture()).path;
     print(path);
+    readQRCode(path);
     var imgFile = File(path);
     var imgBytes = await imgFile.readAsBytes();
     displayedImg = imgBytes;
@@ -81,6 +83,11 @@ class _DetectionPageState extends State<DetectionPage> {
     double temp = cpuInfo.cpuTemperature ?? -1;
     cpuFreq = freq;
     cpuTemp = temp;
+  }
+
+  void readQRCode(path) async {
+    Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
+    qrCodeText = resultFromXFile.text ?? "";
   }
 
   @override
