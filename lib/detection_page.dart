@@ -35,7 +35,13 @@ class _DetectionPageState extends State<DetectionPage> {
 
   int delayBetweenFrames = 0;
 
-  String qrCodeText = "";
+  String nature = "";
+  String identifiant = "";
+  String rayonNeutralisation = "";
+  String desactivableDistance= "";
+  String codeDesactivation = "";
+  String desactivableContact = "";
+  String divers = "";
 
   Uint8List? displayedImg;
 
@@ -87,7 +93,25 @@ class _DetectionPageState extends State<DetectionPage> {
 
   void readQRCode(path) async {
     Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
-    qrCodeText = resultFromXFile.text ?? "";
+    var qrCodeText = resultFromXFile.text ?? "";
+    var qrCodeTextSplitted = qrCodeText.split("\n");
+    if (qrCodeTextSplitted.length == 7) {
+      nature = qrCodeTextSplitted[0];
+      identifiant = qrCodeTextSplitted[1];
+      rayonNeutralisation = qrCodeTextSplitted[2];
+      desactivableDistance = qrCodeTextSplitted[3];
+      codeDesactivation = qrCodeTextSplitted[4];
+      desactivableContact = qrCodeTextSplitted[5];
+      divers = qrCodeTextSplitted[6];
+    } else {
+      nature = "";
+      identifiant = "";
+      rayonNeutralisation = "";
+      desactivableDistance = "";
+      codeDesactivation = "";
+      desactivableContact = "";
+      divers = "";
+    }
   }
 
   @override
@@ -261,14 +285,14 @@ class _DetectionPageState extends State<DetectionPage> {
                 ),
               ),
             ),
-            // text on the right with qrCode text
+            // text on the right with qrCode information
             Positioned(
               top: 0,
               right: 0,
               child: Container(
                 color: Colors.black.withOpacity(0.5),
                 child: Text(
-                  "QR code: $qrCodeText",
+                  "Nature: $nature\nIdentidiant: $identifiant\nRayon de neutralisation : $rayonNeutralisation\nDésactivable à distance: $desactivableDistance\nCode de désactivation: $codeDesactivation\nDésactivable au contact: $desactivableContact\nDivers: $divers",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
