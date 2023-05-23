@@ -10,7 +10,10 @@ import 'home_page.dart';
 import 'package:flutter/services.dart';
 import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
-import 'package:flutter_zxing/flutter_zxing.dart';  
+import 'package:flutter_zxing/flutter_zxing.dart';
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';  
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -44,6 +47,7 @@ class _DetectionPageState extends State<DetectionPage> {
   String divers = "";
 
   Uint8List? processedImg;
+  Uint8List? croppedImg;
 
   @override
   void initState() {
@@ -114,6 +118,12 @@ class _DetectionPageState extends State<DetectionPage> {
     }
   }
 
+  Uint8List cropImage(Uint8List imgBytes, double left, double top, double width, double height) {
+    img.Image image = img.decodeImage(imgBytes)!;
+    img.Image cropped = img.copyCrop(image, (left * image.width).toInt(), (top * image.height).toInt(), (width * image.width).toInt(), (height * image.height).toInt());
+    return Uint8List.fromList(img.encodePng(cropped));
+  }
+
   @override
   void dispose() {
     cameraController.dispose();
@@ -155,6 +165,11 @@ class _DetectionPageState extends State<DetectionPage> {
       element?.rect.width = element.rect.height;
       element?.rect.height = temp!;
     });
+    if (objDetect.isNotEmpty) {
+      var firstElement = objDetect[0]!;
+      croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
+    }
+
     setState(() {
       // image = File(image.path);
     });
@@ -297,7 +312,19 @@ class _DetectionPageState extends State<DetectionPage> {
                 ),
               ),
             ),
-            // SizedBox(height: 200, width: 200, child: Positioned(top: 0, left:0, child: Image.memory(processedImg ?? Uint8List(1)))),
+            Positioned(
+              top: 32,
+              left: 0,
+              child: SizedBox(
+                height: 100,
+                width: 100,
+                child: Image.memory(
+                  croppedImg ?? Uint8List(0),
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.search, size: 50, color: Colors.grey);
+                  })
+              ),
+            ),
             renderBoxesWithoutImage(objDetect, boxesColor: Color.fromARGB(255, 68, 255, 0)),
           ],
         ),
