@@ -34,6 +34,8 @@ class _DetectionPageState extends State<DetectionPage> {
 
   int delayBetweenFrames = 0;
 
+  String qrCodeText = "";
+
   Uint8List? displayedImg;
 
   @override
@@ -240,7 +242,7 @@ class _DetectionPageState extends State<DetectionPage> {
                                     height: MediaQuery.of(context).size.height,
                                     width: MediaQuery.of(context).size.width,
                                     child: CameraPreview(cameraController))),
-            // text with cpuFred and cpuTemp
+            // text on the left with cpuFred and cpuTemp
             Positioned(
               top: 0,
               left: 0,
@@ -248,6 +250,18 @@ class _DetectionPageState extends State<DetectionPage> {
                 color: Colors.black.withOpacity(0.5),
                 child: Text(
                   "CPU freq: $cpuFreq\nCPU temp: $cpuTemp",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+            // text on the right with qrCode text
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: Text(
+                  "QR code: $qrCodeText",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
