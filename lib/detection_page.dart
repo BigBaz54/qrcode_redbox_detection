@@ -43,7 +43,7 @@ class _DetectionPageState extends State<DetectionPage> {
   String desactivableContact = "";
   String divers = "";
 
-  Uint8List? displayedImg;
+  Uint8List? processedImg;
 
   @override
   void initState() {
@@ -67,20 +67,20 @@ class _DetectionPageState extends State<DetectionPage> {
   void startDetection() async {
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
-      Uint8List imgBytes = await takePic();
+      String path = await takePic();
+      var imgFile = File(path);
+      var imgBytes = await imgFile.readAsBytes();
+      processedImg = imgBytes;
       runObjectDetection(imgBytes);
+      readQRCode(path);
       updateMetrics();
     }
   }
 
-  Future<Uint8List> takePic() async {
+  Future<String> takePic() async {
     var path = (await cameraController.takePicture()).path;
     print(path);
-    readQRCode(path);
-    var imgFile = File(path);
-    var imgBytes = await imgFile.readAsBytes();
-    displayedImg = imgBytes;
-    return imgBytes;
+    return path;
   }
 
   void updateMetrics() async {
@@ -297,7 +297,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 ),
               ),
             ),
-            // SizedBox(height: 200, width: 200, child: Positioned(top: 0, left:0, child: Image.memory(displayedImg ?? Uint8List(1)))),
+            // SizedBox(height: 200, width: 200, child: Positioned(top: 0, left:0, child: Image.memory(processedImg ?? Uint8List(1)))),
             renderBoxesWithoutImage(objDetect, boxesColor: Color.fromARGB(255, 68, 255, 0)),
           ],
         ),
