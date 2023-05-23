@@ -59,7 +59,6 @@ class _DetectionPageState extends State<DetectionPage> {
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       Uint8List imgBytes = await takePic();
-      print(imgBytes.lengthInBytes);
       runObjectDetection(imgBytes);
       updateMetrics();
     }
