@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
 }
 
 Future loadModel() async {
-  String pathObjectDetectionModel = "assets/models/best.torchscript";
+  String pathObjectDetectionModel = "assets/models/old.torchscript";
   try {
     final ModelObjectDetection objectModel = await FlutterPytorch.loadObjectDetectionModel(
               pathObjectDetectionModel, 1, 640, 640,
