@@ -60,6 +60,8 @@ class _DetectionPageState extends State<DetectionPage> {
 
   void startCamera(int direction) async {
     cameraController = CameraController(cameras[direction], ResolutionPreset.high, enableAudio: false);
+    cameraController.setFlashMode(FlashMode.off);
+    cameraController.setExposureMode(ExposureMode.auto);
     await cameraController.initialize().then((value) {
       if (!mounted) {
         return;
