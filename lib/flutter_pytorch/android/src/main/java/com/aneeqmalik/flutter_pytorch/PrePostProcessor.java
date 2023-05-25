@@ -42,7 +42,7 @@ public class PrePostProcessor {
     }
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
         // to handle different model image size
-        switch imageWidth {
+        switch (imageWidth) {
             case 640:
                 mOutputRow = 25200;
                 break;
