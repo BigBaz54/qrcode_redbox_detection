@@ -41,7 +41,17 @@ public class PrePostProcessor {
         mImageHeight=imageHeight;
     }
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
-
+        // to handle different model image size
+        switch imageWidth {
+            case 640:
+                mOutputRow = 25200;
+                break;
+            case 160:
+                mOutputRow = 945;
+                break;
+            default:
+                mOutputRow = 25200;
+        }
         mNumberOfClasses=numberOfClasses;
         mOutputColumn = (mNumberOfClasses+5);
         mImageWidth=imageWidth;
@@ -122,6 +132,10 @@ public class PrePostProcessor {
     }
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
+        // Log.i("PytorchLitePlugin","output length "+String.valueOf(outputs.length));
+        // Log.i("PytorchLitePlugin","original output row "+String.valueOf(mOutputRow));
+        // Log.i("PytorchLitePlugin","output column "+String.valueOf(mOutputColumn));
+        // Log.i("PytorchLitePlugin","my output row "+String.valueOf(outputs.length/ (mOutputColumn+4)));
         for (int i = 0; i< mOutputRow; i++) {
             //Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
             if (outputs[i* mOutputColumn +4] > mScoreThreshold) {
