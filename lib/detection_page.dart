@@ -31,12 +31,15 @@ class _DetectionPageState extends State<DetectionPage> {
   late ModelObjectDetection objectModel = widget.objectModel;
   List<ResultObjectDetection?> objDetect = [];
   final platform = const MethodChannel('com.example.qrcode_redbox_detection');
-  double cpuTemp = -1;
-  int cpuFreq = -1;
 
   int direction = 0;
 
+  double cpuTemp = -1;
+  int cpuFreq = -1;
   int delayBetweenFrames = 0;
+  int detectionWindowStartTime = -1;
+  int numberOfImagesProcessed = 0;
+  double fps = -1;
 
   String nature = "";
   String identifiant = "";
@@ -69,6 +72,7 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   void startDetection() async {
+    detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       String path = await takePic();
@@ -82,7 +86,9 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   Future<String> takePic() async {
+    final stopwatch = Stopwatch()..start();
     var path = (await cameraController.takePicture()).path;
+    print('takePic() executed in ${stopwatch.elapsed.inMilliseconds} milliseconds');
     print(path);
     return path;
   }
@@ -93,10 +99,18 @@ class _DetectionPageState extends State<DetectionPage> {
     double temp = cpuInfo.cpuTemperature ?? -1;
     cpuFreq = freq;
     cpuTemp = temp;
+    numberOfImagesProcessed++;
+    if (numberOfImagesProcessed % 10 == 0) {
+      fps = 10 / ((DateTime.now().millisecondsSinceEpoch - detectionWindowStartTime) / 1000);
+      detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
+    }    
+    setState(() {});
   }
 
   void readQRCode(path) async {
+    final stopwatch = Stopwatch()..start();
     Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
+    print('readQRCode() executed in ${stopwatch.elapsed.inMilliseconds} milliseconds');
     var qrCodeText = resultFromXFile.text ?? "";
     var qrCodeTextSplitted = qrCodeText.split("\n");
     if (qrCodeTextSplitted.length == 7) {
@@ -288,14 +302,14 @@ class _DetectionPageState extends State<DetectionPage> {
                                     height: MediaQuery.of(context).size.height,
                                     width: MediaQuery.of(context).size.width,
                                     child: CameraPreview(cameraController))),
-            // text on the left with cpuFred and cpuTemp
+            // text on the left with cpuFred and cpuTemp and FPS avg
             Positioned(
               top: 0,
               left: 0,
               child: Container(
                 color: Colors.black.withOpacity(0.5),
                 child: Text(
-                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp",
+                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. FPS: $fps",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -313,7 +327,7 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             Positioned(
-              top: 32,
+              top: 48,
               left: 0,
               child: SizedBox(
                 height: 100,
