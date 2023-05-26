@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -11,9 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';  
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -39,7 +38,16 @@ class _DetectionPageState extends State<DetectionPage> {
   int delayBetweenFrames = 0;
   int detectionWindowStartTime = -1;
   int numberOfImagesProcessed = 0;
+  int numberOfPicTaken = 0;
+  int numberOfImageDetected = 0;
+  int numberOfQRCodeRead = 0;
   double fps = -1;
+  double totalPictureTime = 0;
+  double avgPictureTime = -1;
+  double totalDetectionTime = 0;
+  double avgDetectionTime = -1;
+  double totalQRCodeTime = 0;
+  double avgQRCodeTime = -1;
 
   String nature = "";
   String identifiant = "";
@@ -78,6 +86,9 @@ class _DetectionPageState extends State<DetectionPage> {
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       String path = await takePic();
+      if (path == "") {
+        continue;
+      }
       var imgFile = File(path);
       var imgBytes = await imgFile.readAsBytes();
       processedImg = imgBytes;
@@ -88,9 +99,20 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   Future<String> takePic() async {
+    if (!cameraController.value.isInitialized) {
+      print("Controller not initialized");
+      return "";
+    }
+    if (cameraController.value.isTakingPicture) {
+      print("Controller is taking picture");
+      return "";
+    }
     final stopwatch = Stopwatch()..start();
     var path = (await cameraController.takePicture()).path;
-    print('takePic() executed in ${stopwatch.elapsed.inMilliseconds} milliseconds');
+    var time = stopwatch.elapsed.inMilliseconds;
+    print('takePic() executed in $time milliseconds');
+    totalPictureTime += time;
+    numberOfPicTaken++;
     print(path);
     return path;
   }
@@ -101,18 +123,24 @@ class _DetectionPageState extends State<DetectionPage> {
     double temp = cpuInfo.cpuTemperature ?? -1;
     cpuFreq = freq;
     cpuTemp = temp;
+    avgPictureTime = totalPictureTime / numberOfPicTaken;
+    avgDetectionTime = totalDetectionTime / numberOfImageDetected;
+    avgQRCodeTime = totalQRCodeTime / numberOfQRCodeRead;
     numberOfImagesProcessed++;
     if (numberOfImagesProcessed % 10 == 0) {
       fps = 10 / ((DateTime.now().millisecondsSinceEpoch - detectionWindowStartTime) / 1000);
       detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
-    }    
+    } 
     setState(() {});
   }
 
   void readQRCode(path) async {
     final stopwatch = Stopwatch()..start();
     Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
-    print('readQRCode() executed in ${stopwatch.elapsed.inMilliseconds} milliseconds');
+    int time = stopwatch.elapsed.inMilliseconds;
+    print('readQRCode() executed in $time milliseconds');
+    totalQRCodeTime += time;
+    numberOfQRCodeRead++;
     var qrCodeText = resultFromXFile.text ?? "";
     var qrCodeTextSplitted = qrCodeText.split("\n");
     if (qrCodeTextSplitted.length == 7) {
@@ -152,7 +180,10 @@ class _DetectionPageState extends State<DetectionPage> {
         imageAsBytes,
         minimumScore: 0.6,
         IOUThershold: 0.6);
-    print('runObjectDetection() executed in ${stopwatch.elapsed.inMilliseconds} milliseconds');
+    int time = stopwatch.elapsed.inMilliseconds;
+    print('runObjectDetection() executed in $time milliseconds');
+    totalDetectionTime += time;
+    numberOfImageDetected++;
     objDetect.forEach((element) {
       print({"state" : "before correction",
         "score": element?.score,
@@ -310,18 +341,21 @@ class _DetectionPageState extends State<DetectionPage> {
               left: 0,
               child: Container(
                 color: Colors.black.withOpacity(0.5),
+                width: MediaQuery.of(context).size.width*32/90-1,
                 child: Text(
-                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. FPS: $fps",
+                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
             ),
             // text on the right with qrCode information
+            // max width = 2/3 
             Positioned(
               top: 0,
               right: 0,
               child: Container(
                 color: Colors.black.withOpacity(0.5),
+                width: MediaQuery.of(context).size.width*58/90-1,
                 child: Text(
                   "Nature: $nature\nIdentidiant: $identifiant\nRayon de neutralisation : $rayonNeutralisation\nDésactivable à distance: $desactivableDistance\nCode de désactivation: $codeDesactivation\nDésactivable au contact: $desactivableContact\nDivers: $divers",
                   style: TextStyle(color: Colors.white),
@@ -329,7 +363,7 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             Positioned(
-              top: 48,
+              top: 16*6,
               left: 0,
               child: SizedBox(
                 height: 100,
