@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
   camera: ^0.10.4
-  camera_android_camerax: ^0.5.0
   path_provider:
   path:
   camera_windows: 
