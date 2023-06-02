@@ -23,6 +23,8 @@ class _HomePageState extends State<HomePage> {
   final _picker = ImagePicker();
   late List<CameraDescription> cameras = widget.cameras;
   late ModelObjectDetection objectModel = widget.objectModel;
+  List<String> robotNames = ['1_TER_BUNKER', '1_AIR_ANAFI-AI', '2_TER_SPOT', '2_AIR_ANAFI', '3_TER_LEO'];
+  String robotName = '1_TER_BUNKER';
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,30 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 child: const Text('Live detection'),
+              ),
+              // dropdown menu for name selection between 'banana' and 'apple'
+              DropdownButton<String>(
+                value: robotName,
+                icon: const Icon(Icons.arrow_downward),
+                iconSize: 24,
+                elevation: 16,
+                style: const TextStyle(color: Colors.black),
+                underline: Container(
+                  height: 2,
+                  color: const Color.fromARGB(255, 15, 110, 0),
+                ),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    robotName = newValue!;
+                  });
+                },
+                items: robotNames
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: const TextStyle(fontSize: 16)),
+                  );
+                }).toList(),
               ),
             ],
           ),
