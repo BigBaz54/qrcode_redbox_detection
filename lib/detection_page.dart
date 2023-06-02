@@ -133,6 +133,7 @@ class _DetectionPageState extends State<DetectionPage> {
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       String path = await takePic();
+      getLocation();
       if (path == "") {
         continue;
       }
@@ -141,7 +142,6 @@ class _DetectionPageState extends State<DetectionPage> {
       processedImg = imgBytes;
       runObjectDetection(imgBytes);
       readQRCode(path);
-      getLocation();
       updateMetrics();
     }
   }
