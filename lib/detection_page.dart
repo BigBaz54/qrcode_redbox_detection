@@ -13,6 +13,7 @@ import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
+import 'package:geolocator/geolocator.dart' as gl;
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _DetectionPageState extends State<DetectionPage> {
   final platform = const MethodChannel('com.example.qrcode_redbox_detection');
 
   int direction = 0;
+  bool hasLocationPermission = false;
 
   double cpuTemp = -1;
   int cpuFreq = -1;
@@ -48,6 +50,8 @@ class _DetectionPageState extends State<DetectionPage> {
   double avgDetectionTime = -1;
   double totalQRCodeTime = 0;
   double avgQRCodeTime = -1;
+  double latitude = -1;
+  double longitude = -1;
 
   String nature = "";
   String identifiant = "";
@@ -74,11 +78,54 @@ class _DetectionPageState extends State<DetectionPage> {
       if (!mounted) {
         return;
       }
+      checkGPS();
       startDetection();
       setState(() {});
     }).catchError((e) {
       print(e);
     });
+  }
+
+  checkGPS() async {
+      bool servicestatus = await gl.Geolocator.isLocationServiceEnabled();
+      if(servicestatus){
+            gl.LocationPermission permission = await gl.Geolocator.checkPermission();
+          
+            if (permission == gl.LocationPermission.denied) {
+                permission = await gl.Geolocator.requestPermission();
+                if (permission == gl.LocationPermission.denied) {
+                    print('Location permissions are denied');
+                }else if(permission == gl.LocationPermission.deniedForever){
+                    print("'Location permissions are permanently denied");
+                }else{
+                   hasLocationPermission = true;
+                }
+            }else{
+               hasLocationPermission = true;
+            }
+
+            if(hasLocationPermission){
+                setState(() {
+                  //refresh the UI
+                });
+            }
+      }else{
+        print("GPS Service is not enabled, turn on GPS location");
+      }
+
+      setState(() {
+         //refresh the UI
+      });
+  }
+
+  void getLocation() async {
+    try {
+      gl.Position position = await gl.Geolocator.getCurrentPosition(desiredAccuracy: gl.LocationAccuracy.high);
+      latitude = position.latitude;
+      longitude = position.longitude;
+    } catch (e) {
+      print(e);
+    }
   }
 
   void startDetection() async {
@@ -94,6 +141,7 @@ class _DetectionPageState extends State<DetectionPage> {
       processedImg = imgBytes;
       runObjectDetection(imgBytes);
       readQRCode(path);
+      getLocation();
       updateMetrics();
     }
   }
@@ -104,7 +152,6 @@ class _DetectionPageState extends State<DetectionPage> {
       return "";
     }
     if (cameraController.value.isTakingPicture) {
-      print("Controller is taking picture");
       return "";
     }
     final stopwatch = Stopwatch()..start();
@@ -123,9 +170,15 @@ class _DetectionPageState extends State<DetectionPage> {
     double temp = cpuInfo.cpuTemperature ?? -1;
     cpuFreq = freq;
     cpuTemp = temp;
-    avgPictureTime = totalPictureTime / numberOfPicTaken;
-    avgDetectionTime = totalDetectionTime / numberOfImageDetected;
-    avgQRCodeTime = totalQRCodeTime / numberOfQRCodeRead;
+    if (numberOfPicTaken != 0) {
+      avgPictureTime = totalPictureTime / numberOfPicTaken;
+    }
+    if (numberOfImageDetected != 0) {
+      avgDetectionTime = totalDetectionTime / numberOfImageDetected;
+    }
+    if (numberOfQRCodeRead != 0) {
+      avgQRCodeTime = totalQRCodeTime / numberOfQRCodeRead;
+    }
     numberOfImagesProcessed++;
     if (numberOfImagesProcessed % 10 == 0) {
       fps = 10 / ((DateTime.now().millisecondsSinceEpoch - detectionWindowStartTime) / 1000);
@@ -343,7 +396,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 color: Colors.black.withOpacity(0.5),
                 width: MediaQuery.of(context).size.width*32/90-1,
                 child: Text(
-                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}",
+                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -363,7 +416,7 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             Positioned(
-              top: 16*6,
+              top: 16*8,
               left: 0,
               child: SizedBox(
                 height: 100,
