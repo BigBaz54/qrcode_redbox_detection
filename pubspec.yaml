@@ -46,6 +46,7 @@ dependencies:
     path: lib/flutter_pytorch
   flutter_zxing: ^1.2.0
   geolocator: ^9.0.2
+  flutter_compass: ^0.7.0
 
 dev_dependencies:
   flutter_test:

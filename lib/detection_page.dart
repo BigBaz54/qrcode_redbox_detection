@@ -14,6 +14,7 @@ import 'package:cpu_reader/cpuinfo.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
 import 'package:geolocator/geolocator.dart' as gl;
+import 'package:flutter_compass/flutter_compass.dart';
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -52,6 +53,7 @@ class _DetectionPageState extends State<DetectionPage> {
   double avgQRCodeTime = -1;
   double latitude = -1;
   double longitude = -1;
+  double heading = -1;
 
   String nature = "";
   String identifiant = "";
@@ -128,11 +130,27 @@ class _DetectionPageState extends State<DetectionPage> {
     }
   }
 
+  void getHeading() async {
+    FlutterCompass.events?.listen((CompassEvent event) {
+      if (event.heading == null) {
+        heading = -1;
+      } else {
+        double h = event.heading!;
+        if (h < 0) {
+          heading = 360+h;
+        } else {
+          heading = h;
+        }
+      }
+    });
+  }
+
   void startDetection() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       String path = await takePic();
+      getHeading();
       getLocation();
       if (path == "") {
         continue;
@@ -396,7 +414,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 color: Colors.black.withOpacity(0.5),
                 width: MediaQuery.of(context).size.width*32/90-1,
                 child: Text(
-                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude",
+                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude\nheading: ${(heading*100000).round()/100000}",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -416,7 +434,7 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             Positioned(
-              top: 16*8,
+              top: 16*9,
               left: 0,
               child: SizedBox(
                 height: 100,
