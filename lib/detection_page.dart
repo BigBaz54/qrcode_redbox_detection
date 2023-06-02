@@ -16,6 +16,7 @@ import 'package:image/image.dart' as img;
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:http/http.dart' as http;
+// import 'package:exif/exif.dart';
 import 'dart:convert';
 
 class DetectionPage extends StatefulWidget {
@@ -177,6 +178,11 @@ class _DetectionPageState extends State<DetectionPage> {
       }
       var imgFile = File(path);
       var imgBytes = await imgFile.readAsBytes();
+      // final data = await readExifFromBytes(imgBytes);
+      // print('EXIF DATA');
+      // for (final entry in data!.entries) {
+      //   print('${entry.key}: ${entry.value}');
+      // }
       processedImg = imgBytes;
       runObjectDetection(imgBytes);
       readQRCode(path);
