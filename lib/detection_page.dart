@@ -15,6 +15,8 @@ import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:flutter_compass/flutter_compass.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
@@ -145,6 +147,23 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
+  void sendRequest() async {
+    if (latitude == -1 || longitude == -1 || heading == -1) {
+      return;
+    }
+    http.post(
+      Uri.parse('https://webhook.site/416a2f7d-58b6-4525-ab03-621670115d1e'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+        'heading': heading.toString(),
+      }),
+    );
+  }
+
   void startDetection() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
@@ -152,6 +171,7 @@ class _DetectionPageState extends State<DetectionPage> {
       String path = await takePic();
       getHeading();
       getLocation();
+      sendRequest();
       if (path == "") {
         continue;
       }
