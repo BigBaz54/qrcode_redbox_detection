@@ -20,10 +20,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class DetectionPage extends StatefulWidget {
-  const DetectionPage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
+
+  const DetectionPage({required this.cameras, required this.objectModel, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
 
   final List<CameraDescription> cameras;
   final ModelObjectDetection objectModel;
+  final String robotName;
+  final String url;
+  final String authKey;
+  final String teamName;
 
   @override
   State<DetectionPage> createState() => _DetectionPageState();
@@ -33,6 +38,10 @@ class _DetectionPageState extends State<DetectionPage> {
   late List<CameraDescription> cameras = widget.cameras;
   late CameraController cameraController;
   late ModelObjectDetection objectModel = widget.objectModel;
+  late String robotName = widget.robotName;
+  late String url = widget.url;
+  late String authKey = widget.authKey;
+  late String teamName = widget.teamName;
   List<ResultObjectDetection?> objDetect = [];
   final platform = const MethodChannel('com.example.qrcode_redbox_detection');
 
@@ -153,14 +162,19 @@ class _DetectionPageState extends State<DetectionPage> {
       return;
     }
     http.post(
-      Uri.parse('https://webhook.site/416a2f7d-58b6-4525-ab03-621670115d1e'),
+      Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
-        'latitude': latitude.toString(),
-        'longitude': longitude.toString(),
+      body: jsonEncode(<String, Object>{
+        'teamName': teamName,
+        'authKey': authKey,
+        'geolocation': {
+          'latitude': latitude.toString(),
+          'longitude': longitude.toString(),
+        },
         'heading': heading.toString(),
+        'robotName': robotName,
       }),
     );
   }

@@ -23,12 +23,15 @@ class _HomePageState extends State<HomePage> {
   final _picker = ImagePicker();
   late List<CameraDescription> cameras = widget.cameras;
   late ModelObjectDetection objectModel = widget.objectModel;
-  List<String> robotNames = ['1_TER_BUNKER', '1_AIR_ANAFI-AI', '2_TER_SPOT', '2_AIR_ANAFI', '3_TER_LEO'];
   String robotName = '1_TER_BUNKER';
+  String url = 'https://webhook.site/6e99bb5c-a604-4de9-942c-59dfd0bb3f19';
+  String authKey = '';
+  String teamName = 'test';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Red box detection'),
       ),
@@ -73,35 +76,65 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModel: objectModel)),
+                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModel: objectModel, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
                   );
                 },
                 child: const Text('Live detection'),
               ),
-              // dropdown menu for name selection between 'banana' and 'apple'
-              DropdownButton<String>(
-                value: robotName,
-                icon: const Icon(Icons.arrow_downward),
-                iconSize: 24,
-                elevation: 16,
-                style: const TextStyle(color: Colors.black),
-                underline: Container(
-                  height: 2,
-                  color: const Color.fromARGB(255, 15, 110, 0),
+              SizedBox(width: 180,
+              child: Column(children: [
+                TextField(
+                  onChanged: (text) {
+                    teamName = text;
+                  },
+                  style: const TextStyle(fontSize: 16),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Team name',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
                 ),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    robotName = newValue!;
-                  });
-                },
-                items: robotNames
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: const TextStyle(fontSize: 16)),
-                  );
-                }).toList(),
-              ),
+                const SizedBox(height: 5),
+                TextField(
+                  onChanged: (text) {
+                    robotName = text;
+                  },
+                  style: const TextStyle(fontSize: 16),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Robot name',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  onChanged: (text) {
+                    url = text;
+                  },
+                  style: const TextStyle(fontSize: 16),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'URL',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  onChanged: (text) {
+                    authKey = text;
+                  },
+                  style: const TextStyle(fontSize: 16),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Auth key',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
+                ),
+              ]),)
             ],
           ),
         ),
