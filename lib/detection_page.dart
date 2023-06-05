@@ -348,7 +348,7 @@ class _DetectionPageState extends State<DetectionPage> {
     });
     pngBytes = result;
   } on PlatformException catch (e) {
-    print("Failed to convert YUV to PNG: '\${e.message}'.");
+    print("Failed to convert YUV to PNG: '${e.message}'.");
   }
   return pngBytes;
 }
