@@ -186,7 +186,7 @@ class _DetectionPageState extends State<DetectionPage> {
       String path = await takePic();
       getHeading();
       getLocation();
-      sendRequest();
+      // sendRequest();
       if (path == "") {
         continue;
       }
@@ -326,6 +326,7 @@ class _DetectionPageState extends State<DetectionPage> {
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
       croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
+      sendRequest();
     }
 
     setState(() {
