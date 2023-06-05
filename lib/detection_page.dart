@@ -182,11 +182,11 @@ class _DetectionPageState extends State<DetectionPage> {
   void startDetection() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
+      bool detected = false;
       await Future.delayed(Duration(milliseconds: delayBetweenFrames));
       String path = await takePic();
       getHeading();
       getLocation();
-      // sendRequest();
       if (path == "") {
         continue;
       }
@@ -198,8 +198,11 @@ class _DetectionPageState extends State<DetectionPage> {
       //   print('${entry.key}: ${entry.value}');
       // }
       processedImg = imgBytes;
-      runObjectDetection(imgBytes);
-      readQRCode(path);
+      detected = detected || await runObjectDetection(imgBytes);
+      detected = detected || await readQRCode(path);
+      if (detected) {
+        sendRequest();
+      }
       updateMetrics();
     }
   }
@@ -245,7 +248,8 @@ class _DetectionPageState extends State<DetectionPage> {
     setState(() {});
   }
 
-  void readQRCode(path) async {
+  Future<bool> readQRCode(path) async {
+    bool detected = false;
     final stopwatch = Stopwatch()..start();
     Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
     int time = stopwatch.elapsed.inMilliseconds;
@@ -255,6 +259,7 @@ class _DetectionPageState extends State<DetectionPage> {
     var qrCodeText = resultFromXFile.text ?? "";
     var qrCodeTextSplitted = qrCodeText.split("\n");
     if (qrCodeTextSplitted.length == 7) {
+      detected = true;
       nature = qrCodeTextSplitted[0];
       identifiant = qrCodeTextSplitted[1];
       rayonNeutralisation = qrCodeTextSplitted[2];
@@ -271,6 +276,7 @@ class _DetectionPageState extends State<DetectionPage> {
       desactivableContact = "";
       divers = "";
     }
+    return detected;
   }
 
   Uint8List cropImage(Uint8List imgBytes, double left, double top, double width, double height) {
@@ -285,7 +291,8 @@ class _DetectionPageState extends State<DetectionPage> {
     super.dispose();
   }
 
-  Future runObjectDetection(imageAsBytes) async {
+  Future<bool> runObjectDetection(imageAsBytes) async {
+    bool detected = false;
     final stopwatch = Stopwatch()..start();
     objDetect = await objectModel.getImagePrediction(
         imageAsBytes,
@@ -326,12 +333,13 @@ class _DetectionPageState extends State<DetectionPage> {
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
       croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
-      sendRequest();
+      detected = true;
     }
 
     setState(() {
       // image = File(image.path);
     });
+    return detected;
   }
 
   Future<Uint8List> convertCameraImageToPNG(CameraImage cameraImage) async {
