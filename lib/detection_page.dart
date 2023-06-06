@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:core';
 
@@ -16,6 +15,7 @@ import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:flutter_compass/flutter_compass.dart';
+// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 // import 'package:exif/exif.dart';
 import 'dart:convert';
@@ -391,7 +391,7 @@ class _DetectionPageState extends State<DetectionPage> {
 }
 
   Widget renderBoxesWithoutImage(
-    List<ResultObjectDetection?> _recognitions,
+    List<ResultObjectDetection?> recognitions,
       {Color? boxesColor, bool showPercentage = true}) {
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -401,7 +401,7 @@ class _DetectionPageState extends State<DetectionPage> {
       double factorY = constraints.maxHeight;
       return Stack(
         children: [
-          ..._recognitions.map((re) {
+          ...recognitions.map((re) {
             if (re == null) {
               return Container();
             }
@@ -437,11 +437,9 @@ class _DetectionPageState extends State<DetectionPage> {
                     alignment: Alignment.centerRight,
                     color: usedColor,
                     child: Text(
-                      (re.className ?? re.classIndex.toString()) +
-                          "_" +
-                          (showPercentage
-                              ? (re.score * 100).toStringAsFixed(2) + "%"
-                              : ""),
+                      "${re.className ?? re.classIndex.toString()}_${showPercentage
+                              ? "${(re.score * 100).toStringAsFixed(2)}%"
+                              : ""}",
                     ),
                   ),
                   Container(
@@ -449,7 +447,7 @@ class _DetectionPageState extends State<DetectionPage> {
                     height: re.rect.height.toDouble() * factorY,
                     decoration: BoxDecoration(
                         border: Border.all(color: usedColor, width: 3),
-                        borderRadius: BorderRadius.all(Radius.circular(2))),
+                        borderRadius: const BorderRadius.all(Radius.circular(2))),
                     child: Container(),
                   ),
                 ],
@@ -493,7 +491,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 width: MediaQuery.of(context).size.width*32/90-1,
                 child: Text(
                   "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude\nheading: ${(heading*100000).round()/100000}",
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -507,7 +505,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 width: MediaQuery.of(context).size.width*58/90-1,
                 child: Text(
                   "Nature: $nature\nIdentidiant: $identifiant\nRayon de neutralisation : $rayonNeutralisation\nDésactivable à distance: $desactivableDistance\nCode de désactivation: $codeDesactivation\nDésactivable au contact: $desactivableContact\nDivers: $divers",
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -524,7 +522,7 @@ class _DetectionPageState extends State<DetectionPage> {
                   })
               ),
             ),
-            renderBoxesWithoutImage(objDetect, boxesColor: Color.fromARGB(255, 68, 255, 0)),
+            renderBoxesWithoutImage(objDetect, boxesColor: const Color.fromARGB(255, 68, 255, 0)),
           ],
         ),
         floatingActionButton: FloatingActionButton(
