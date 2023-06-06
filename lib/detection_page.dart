@@ -418,12 +418,12 @@ class _DetectionPageState extends State<DetectionPage> {
               usedColor = boxesColor;
             }
 
-            print({
-              "left": re.rect.left.toDouble() * factorX,
-              "top": re.rect.top.toDouble() * factorY,
-              "width": re.rect.width.toDouble() * factorX,
-              "height": re.rect.height.toDouble() * factorY,
-            });
+            // print({
+            //   "left": re.rect.left.toDouble() * factorX,
+            //   "top": re.rect.top.toDouble() * factorY,
+            //   "width": re.rect.width.toDouble() * factorX,
+            //   "height": re.rect.height.toDouble() * factorY,
+            // });
             return Positioned(
               left: re.rect.left * factorX,
               top: re.rect.top * factorY - 20,
