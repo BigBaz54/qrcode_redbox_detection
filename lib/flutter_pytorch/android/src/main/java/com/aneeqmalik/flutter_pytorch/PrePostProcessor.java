@@ -181,7 +181,7 @@ public class PrePostProcessor {
             }
         }
 
-        Log.i("PytorchLitePlugin","result length before processing "+String.valueOf(results.size()));
+        // Log.i("PytorchLitePlugin","result length before processing "+String.valueOf(results.size()));
         return nonMaxSuppression(results);
     }
 
