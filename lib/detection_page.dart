@@ -386,7 +386,7 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             Positioned(
-              top: 16*9,
+              top: 16*8,
               left: 0,
               child: SizedBox(
                 height: 100,
