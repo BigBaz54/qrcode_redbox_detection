@@ -100,22 +100,36 @@ class _DetectionPageState extends State<DetectionPage> {
 
   void startStreamDetection() {
     int n = 0;
-    cameraController.startImageStream((CameraImage cameraImage) async {
-      if (n % 50 == 0) {
-        bool detected = false;
-        processedImg = await yuvChannelling.yuvToJpeg(cameraImage);
+    cameraController.startImageStream((CameraImage cameraImage) {
+      if (n % 10 == 0) {
         getHeading();
         getLocation();
-        detected = detected || await runObjectDetection(processedImg);
-        // detected = detected || await readQRCode(path);
-        if (detected) {
-          sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
+        convertImage(cameraImage).then((value) {
+          processedImg = value;
+        });
+        if (processedImg != null) {
+          bool detected = processImage(processedImg!);
+          if (detected) {
+            sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
+          }
+          updateMetrics();
+          setState(() {});
         }
-        updateMetrics();
-        setState(() {});
       }
       n++;
     });
+  }
+
+  Future<Uint8List> convertImage(CameraImage cameraImg) async {
+    Uint8List? jpegImg = await yuvChannelling.yuvToJpeg(cameraImg);
+    return jpegImg;
+  }
+
+  bool processImage(Uint8List jpegImg) {
+    bool detected = false;
+    runObjectDetection(jpegImg).then((value) => detected = value);
+    // readQRCode(path).then((value) => detected = detected || value);
+    return detected;
   }
 
   void updateMetrics() async {
