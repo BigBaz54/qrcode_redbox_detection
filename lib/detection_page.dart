@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:io';
 import 'dart:core';
 import 'yuv_channeling.dart';
 import 'send_request.dart';
@@ -53,12 +52,9 @@ class _DetectionPageState extends State<DetectionPage> {
   int delayBetweenFrames = 0;
   int detectionWindowStartTime = -1;
   int numberOfImagesProcessed = 0;
-  int numberOfPicTaken = 0;
   int numberOfImageDetected = 0;
   int numberOfQRCodeRead = 0;
   double fps = -1;
-  double totalPictureTime = 0;
-  double avgPictureTime = -1;
   double totalDetectionTime = 0;
   double avgDetectionTime = -1;
   double totalQRCodeTime = 0;
@@ -116,58 +112,11 @@ class _DetectionPageState extends State<DetectionPage> {
         if (detected) {
           sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
         }
-        numberOfPicTaken++;
         updateMetrics();
         setState(() {});
       }
       n++;
     });
-  }
-
-  void startDetectionTakePic() async {
-    detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
-    while (true) {
-      bool detected = false;
-      await Future.delayed(Duration(milliseconds: delayBetweenFrames));
-      String path = await takePic();
-      getHeading();
-      getLocation();
-      if (path == "") {
-        continue;
-      }
-      var imgFile = File(path);
-      var imgBytes = await imgFile.readAsBytes();
-      // final data = await readExifFromBytes(imgBytes);
-      // print('EXIF DATA');
-      // for (final entry in data!.entries) {
-      //   print('${entry.key}: ${entry.value}');
-      // }
-      processedImg = imgBytes;
-      detected = detected || await runObjectDetection(imgBytes);
-      detected = detected || await readQRCode(path);
-      if (detected) {
-        sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
-      }
-      updateMetrics();
-    }
-  }
-
-  Future<String> takePic() async {
-    if (!cameraController.value.isInitialized) {
-      print("Controller not initialized");
-      return "";
-    }
-    if (cameraController.value.isTakingPicture) {
-      return "";
-    }
-    final stopwatch = Stopwatch()..start();
-    var path = (await cameraController.takePicture()).path;
-    var time = stopwatch.elapsed.inMilliseconds;
-    print('takePic() executed in $time milliseconds');
-    totalPictureTime += time;
-    numberOfPicTaken++;
-    print(path);
-    return path;
   }
 
   void updateMetrics() async {
@@ -176,9 +125,6 @@ class _DetectionPageState extends State<DetectionPage> {
     double temp = cpuInfo.cpuTemperature ?? -1;
     cpuFreq = freq;
     cpuTemp = temp;
-    if (numberOfPicTaken != 0) {
-      avgPictureTime = totalPictureTime / numberOfPicTaken;
-    }
     if (numberOfImageDetected != 0) {
       avgDetectionTime = totalDetectionTime / numberOfImageDetected;
     }
@@ -218,19 +164,6 @@ class _DetectionPageState extends State<DetectionPage> {
     //       "bottom": element?.rect.bottom,
     //     },
     //   });
-      // var temp = element?.rect.top;
-      // element?.rect.top = element.rect.left;
-      // element?.rect.left = element.rect.bottom;
-      // element?.rect.bottom = element.rect.right;
-      // element?.rect.right = temp!;
-
-      // // symetry by y axis
-      // element?.rect.left = 1 - element.rect.left;  
-      // element?.rect.right = 1 - element.rect.right;
-
-      // temp = element?.rect.width;
-      // element?.rect.width = element.rect.height;
-      // element?.rect.height = temp!;
     // });
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
@@ -239,7 +172,6 @@ class _DetectionPageState extends State<DetectionPage> {
     }
 
     setState(() {
-      // image = File(image.path);
     });
     return detected;
   }
@@ -335,26 +267,6 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
-  Future<Uint8List> convertCameraImageToPNG(CameraImage cameraImage) async {
-  Uint8List pngBytes = Uint8List(0);
-  try {
-    final result = await platform.invokeMethod('convertToPNG', {
-      'width': cameraImage.width,
-      'height': cameraImage.height,
-      'yPlane': cameraImage.planes[0].bytes,
-      'uPlane': cameraImage.planes[1].bytes,
-      'vPlane': cameraImage.planes[2].bytes,
-      'yRowStride': cameraImage.planes[0].bytesPerRow,
-      'uvRowStride': cameraImage.planes[1].bytesPerRow,
-      'uvPixelStride': cameraImage.planes[1].bytesPerPixel,
-    });
-    pngBytes = result;
-  } on PlatformException catch (e) {
-    print("Failed to convert YUV to PNG: '${e.message}'.");
-  }
-  return pngBytes;
-}
-
   Widget renderBoxesWithoutImage(
     List<ResultObjectDetection?> recognitions,
       {Color? boxesColor, bool showPercentage = true}) {
@@ -382,7 +294,6 @@ class _DetectionPageState extends State<DetectionPage> {
             } else {
               usedColor = boxesColor;
             }
-
             // print({
             //   "left": re.rect.left.toDouble() * factorX,
             //   "top": re.rect.top.toDouble() * factorY,
@@ -455,7 +366,7 @@ class _DetectionPageState extends State<DetectionPage> {
                 color: Colors.black.withOpacity(0.5),
                 width: MediaQuery.of(context).size.width*32/90-1,
                 child: Text(
-                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. picture: ${avgPictureTime.round()}ms\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude\nheading: ${(heading*100000).round()/100000}",
+                  "CPU freq: $cpuFreq\nCPU temp: $cpuTemp\navg. detection: ${avgDetectionTime.round()}ms\navg. QR code: ${avgQRCodeTime.round()}ms\navg. FPS: ${(fps*100).round()/100}\nlatitude: $latitude\nlongitude: $longitude\nheading: ${(heading*100000).round()/100000}",
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
