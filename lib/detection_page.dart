@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:core';
 import 'yuv_channeling.dart';
+import 'send_request.dart';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -16,11 +17,7 @@ import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:flutter_compass/flutter_compass.dart';
-// ignore: depend_on_referenced_packages
-import 'package:http/http.dart' as http;
 // import 'package:exif/exif.dart';
-import 'dart:convert';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class DetectionPage extends StatefulWidget {
 
@@ -109,7 +106,7 @@ class _DetectionPageState extends State<DetectionPage> {
   void startStreamDetection() async {
     int n = 0;
     await cameraController.startImageStream((CameraImage cameraImage) async {
-      if (n % 20 == 0) {
+      if (n % 50 == 0) {
         bool detected = false;
         processedImg = await yuvChannelling.yuvToJpeg(cameraImage);
         getHeading();
@@ -117,7 +114,7 @@ class _DetectionPageState extends State<DetectionPage> {
         detected = detected || await runObjectDetection(processedImg);
         // detected = detected || await readQRCode(path);
         if (detected) {
-          sendRequest();
+          sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
         }
         numberOfPicTaken++;
         updateMetrics();
@@ -181,34 +178,6 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
-  void sendRequest() async {
-    if (latitude == -1 || longitude == -1 || heading == -1) {
-      return;
-    }
-    final connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      print("No internet connection : can't send request");
-      return;
-    }
-    http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, Object>{
-        'teamName': teamName,
-        'authKey': authKey,
-        'geolocation': {
-          'latitude': latitude.toString(),
-          'longitude': longitude.toString(),
-        },
-        'heading': heading.toString(),
-        'robotName': robotName,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      }),
-    );
-  }
-
   void startDetection() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
@@ -231,7 +200,7 @@ class _DetectionPageState extends State<DetectionPage> {
       detected = detected || await runObjectDetection(imgBytes);
       detected = detected || await readQRCode(path);
       if (detected) {
-        sendRequest();
+        sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
       }
       updateMetrics();
     }
