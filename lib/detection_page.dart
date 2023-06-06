@@ -204,6 +204,7 @@ class _DetectionPageState extends State<DetectionPage> {
         },
         'heading': heading.toString(),
         'robotName': robotName,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
       }),
     );
   }
