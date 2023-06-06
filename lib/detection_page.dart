@@ -124,60 +124,6 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
-  checkGPS() async {
-      bool servicestatus = await gl.Geolocator.isLocationServiceEnabled();
-      if(servicestatus){
-            gl.LocationPermission permission = await gl.Geolocator.checkPermission();
-          
-            if (permission == gl.LocationPermission.denied) {
-                permission = await gl.Geolocator.requestPermission();
-                if (permission == gl.LocationPermission.denied) {
-                    print('Location permissions are denied');
-                }else if(permission == gl.LocationPermission.deniedForever){
-                    print("'Location permissions are permanently denied");
-                }else{
-                   hasLocationPermission = true;
-                }
-            }else{
-               hasLocationPermission = true;
-            }
-
-            if(hasLocationPermission){
-                setState(() {
-                });
-            }
-      }else{
-        print("GPS Service is not enabled, turn on GPS location");
-      }
-      setState(() {
-      });
-  }
-
-  void getLocation() async {
-    try {
-      gl.Position position = await gl.Geolocator.getCurrentPosition(desiredAccuracy: gl.LocationAccuracy.high);
-      latitude = position.latitude;
-      longitude = position.longitude;
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  void getHeading() async {
-    FlutterCompass.events?.listen((CompassEvent event) {
-      if (event.heading == null) {
-        heading = -1;
-      } else {
-        double h = event.heading!;
-        if (h < 0) {
-          heading = 360+h;
-        } else {
-          heading = h;
-        }
-      }
-    });
-  }
-
   void startDetectionTakePic() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
@@ -247,49 +193,6 @@ class _DetectionPageState extends State<DetectionPage> {
     setState(() {});
   }
 
-  Future<bool> readQRCode(path) async {
-    bool detected = false;
-    final stopwatch = Stopwatch()..start();
-    Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
-    int time = stopwatch.elapsed.inMilliseconds;
-    print('readQRCode() executed in $time milliseconds');
-    totalQRCodeTime += time;
-    numberOfQRCodeRead++;
-    var qrCodeText = resultFromXFile.text ?? "";
-    var qrCodeTextSplitted = qrCodeText.split("\n");
-    if (qrCodeTextSplitted.length == 7) {
-      detected = true;
-      nature = qrCodeTextSplitted[0];
-      identifiant = qrCodeTextSplitted[1];
-      rayonNeutralisation = qrCodeTextSplitted[2];
-      desactivableDistance = qrCodeTextSplitted[3];
-      codeDesactivation = qrCodeTextSplitted[4];
-      desactivableContact = qrCodeTextSplitted[5];
-      divers = qrCodeTextSplitted[6];
-    } else {
-      nature = "";
-      identifiant = "";
-      rayonNeutralisation = "";
-      desactivableDistance = "";
-      codeDesactivation = "";
-      desactivableContact = "";
-      divers = "";
-    }
-    return detected;
-  }
-
-  Uint8List cropImage(Uint8List imgBytes, double left, double top, double width, double height) {
-    img.Image image = img.decodeImage(imgBytes)!;
-    img.Image cropped = img.copyCrop(image, (left * image.width).toInt(), (top * image.height).toInt(), (width * image.width).toInt(), (height * image.height).toInt());
-    return Uint8List.fromList(img.encodePng(cropped));
-  }
-
-  @override
-  void dispose() {
-    cameraController.dispose();
-    super.dispose();
-  }
-
   Future<bool> runObjectDetection(imageAsBytes) async {
     bool detected = false;
     final stopwatch = Stopwatch()..start();
@@ -339,6 +242,97 @@ class _DetectionPageState extends State<DetectionPage> {
       // image = File(image.path);
     });
     return detected;
+  }
+
+  Future<bool> readQRCode(path) async {
+    bool detected = false;
+    final stopwatch = Stopwatch()..start();
+    Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
+    int time = stopwatch.elapsed.inMilliseconds;
+    print('readQRCode() executed in $time milliseconds');
+    totalQRCodeTime += time;
+    numberOfQRCodeRead++;
+    var qrCodeText = resultFromXFile.text ?? "";
+    var qrCodeTextSplitted = qrCodeText.split("\n");
+    if (qrCodeTextSplitted.length == 7) {
+      detected = true;
+      nature = qrCodeTextSplitted[0];
+      identifiant = qrCodeTextSplitted[1];
+      rayonNeutralisation = qrCodeTextSplitted[2];
+      desactivableDistance = qrCodeTextSplitted[3];
+      codeDesactivation = qrCodeTextSplitted[4];
+      desactivableContact = qrCodeTextSplitted[5];
+      divers = qrCodeTextSplitted[6];
+    } else {
+      nature = "";
+      identifiant = "";
+      rayonNeutralisation = "";
+      desactivableDistance = "";
+      codeDesactivation = "";
+      desactivableContact = "";
+      divers = "";
+    }
+    return detected;
+  }
+
+  Uint8List cropImage(Uint8List imgBytes, double left, double top, double width, double height) {
+    img.Image image = img.decodeImage(imgBytes)!;
+    img.Image cropped = img.copyCrop(image, (left * image.width).toInt(), (top * image.height).toInt(), (width * image.width).toInt(), (height * image.height).toInt());
+    return Uint8List.fromList(img.encodePng(cropped));
+  }
+
+  checkGPS() async {
+      bool servicestatus = await gl.Geolocator.isLocationServiceEnabled();
+      if(servicestatus){
+            gl.LocationPermission permission = await gl.Geolocator.checkPermission();
+          
+            if (permission == gl.LocationPermission.denied) {
+                permission = await gl.Geolocator.requestPermission();
+                if (permission == gl.LocationPermission.denied) {
+                    print('Location permissions are denied');
+                }else if(permission == gl.LocationPermission.deniedForever){
+                    print("'Location permissions are permanently denied");
+                }else{
+                   hasLocationPermission = true;
+                }
+            }else{
+               hasLocationPermission = true;
+            }
+
+            if(hasLocationPermission){
+                setState(() {
+                });
+            }
+      }else{
+        print("GPS Service is not enabled, turn on GPS location");
+      }
+      setState(() {
+      });
+  }
+
+  void getLocation() async {
+    try {
+      gl.Position position = await gl.Geolocator.getCurrentPosition(desiredAccuracy: gl.LocationAccuracy.high);
+      latitude = position.latitude;
+      longitude = position.longitude;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void getHeading() async {
+    FlutterCompass.events?.listen((CompassEvent event) {
+      if (event.heading == null) {
+        heading = -1;
+      } else {
+        double h = event.heading!;
+        if (h < 0) {
+          heading = 360+h;
+        } else {
+          heading = h;
+        }
+      }
+    });
   }
 
   Future<Uint8List> convertCameraImageToPNG(CameraImage cameraImage) async {
@@ -512,5 +506,11 @@ class _DetectionPageState extends State<DetectionPage> {
             CircularProgressIndicator(),
         );
     }
+  }
+
+  @override
+  void dispose() {
+    cameraController.dispose();
+    super.dispose();
   }
 }
