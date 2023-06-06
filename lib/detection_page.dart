@@ -184,8 +184,7 @@ class _DetectionPageState extends State<DetectionPage> {
     if (latitude == -1 || longitude == -1 || heading == -1) {
       return;
     }
-    try {
-      http.post(
+    http.post(
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -201,10 +200,6 @@ class _DetectionPageState extends State<DetectionPage> {
         'robotName': robotName,
       }),
     );
-    } catch (_) {
-      print("Error sending request");
-    }
-    
   }
 
   void startDetection() async {
