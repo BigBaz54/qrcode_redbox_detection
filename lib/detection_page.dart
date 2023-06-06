@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'dart:core';
+import 'yuv_channeling.dart';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -19,7 +20,7 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:http/http.dart' as http;
 // import 'package:exif/exif.dart';
 import 'dart:convert';
-import 'yuv_channeling.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class DetectionPage extends StatefulWidget {
 
@@ -182,6 +183,10 @@ class _DetectionPageState extends State<DetectionPage> {
 
   void sendRequest() async {
     if (latitude == -1 || longitude == -1 || heading == -1) {
+      return;
+    }
+    final connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
       return;
     }
     http.post(
