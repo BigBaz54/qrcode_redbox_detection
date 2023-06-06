@@ -98,9 +98,9 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
-  void startStreamDetection() async {
+  void startStreamDetection() {
     int n = 0;
-    await cameraController.startImageStream((CameraImage cameraImage) async {
+    cameraController.startImageStream((CameraImage cameraImage) async {
       if (n % 50 == 0) {
         bool detected = false;
         processedImg = await yuvChannelling.yuvToJpeg(cameraImage);
