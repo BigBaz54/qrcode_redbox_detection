@@ -92,7 +92,6 @@ class _DetectionPageState extends State<DetectionPage> {
         return;
       }
       checkGPS();
-      // startDetection();
       startStreamDetection();
     }).catchError((e) {
       print(e);
