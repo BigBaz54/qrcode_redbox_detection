@@ -99,24 +99,21 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   void startStreamDetection() {
-    int n = 0;
     cameraController.startImageStream((CameraImage cameraImage) {
-      if (n % 10 == 0) {
+      if (!isProcessing) {
+        isProcessing = true;
+        bool detected = false;
         getHeading();
         getLocation();
         convertImage(cameraImage).then((value) {
-          processedImg = value;
+          detected = processImage(value);
         });
-        if (processedImg != null) {
-          bool detected = processImage(processedImg!);
-          if (detected) {
-            sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
-          }
-          updateMetrics();
-          setState(() {});
+        if (detected) {
+          sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
         }
+        updateMetrics();
+        setState(() {});
       }
-      n++;
     });
   }
 
@@ -127,7 +124,10 @@ class _DetectionPageState extends State<DetectionPage> {
 
   bool processImage(Uint8List jpegImg) {
     bool detected = false;
-    runObjectDetection(jpegImg).then((value) => detected = value);
+    runObjectDetection(jpegImg).then((value) {
+      detected = value;
+      isProcessing = false;
+    });
     // readQRCode(path).then((value) => detected = detected || value);
     return detected;
   }
