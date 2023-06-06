@@ -178,7 +178,7 @@ class _DetectionPageState extends State<DetectionPage> {
     });
   }
 
-  void startDetection() async {
+  void startDetectionTakePic() async {
     detectionWindowStartTime = DateTime.now().millisecondsSinceEpoch;
     while (true) {
       bool detected = false;
