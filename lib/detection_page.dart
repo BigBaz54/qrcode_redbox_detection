@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:core';
 
@@ -18,6 +19,7 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:http/http.dart' as http;
 // import 'package:exif/exif.dart';
 import 'dart:convert';
+import 'yuv_channeling.dart';
 
 class DetectionPage extends StatefulWidget {
 
@@ -78,6 +80,9 @@ class _DetectionPageState extends State<DetectionPage> {
   Uint8List? processedImg;
   Uint8List? croppedImg;
 
+  bool isProcessing = false;
+  YuvChannelling yuvChannelling = YuvChannelling();
+
   @override
   void initState() {
     super.initState();
@@ -93,10 +98,31 @@ class _DetectionPageState extends State<DetectionPage> {
         return;
       }
       checkGPS();
-      startDetection();
-      setState(() {});
+      // startDetection();
+      startStreamDetection();
     }).catchError((e) {
       print(e);
+    });
+  }
+
+  void startStreamDetection() async {
+    int n = 0;
+    await cameraController.startImageStream((CameraImage cameraImage) async {
+      if (n % 20 == 0) {
+        bool detected = false;
+        processedImg = await yuvChannelling.yuvToJpeg(cameraImage);
+        getHeading();
+        getLocation();
+        detected = detected || await runObjectDetection(processedImg);
+        // detected = detected || await readQRCode(path);
+        if (detected) {
+          sendRequest();
+        }
+        numberOfPicTaken++;
+        updateMetrics();
+        setState(() {});
+      }
+      n++;
     });
   }
 
@@ -120,15 +146,12 @@ class _DetectionPageState extends State<DetectionPage> {
 
             if(hasLocationPermission){
                 setState(() {
-                  //refresh the UI
                 });
             }
       }else{
         print("GPS Service is not enabled, turn on GPS location");
       }
-
       setState(() {
-         //refresh the UI
       });
   }
 
@@ -302,34 +325,34 @@ class _DetectionPageState extends State<DetectionPage> {
     print('runObjectDetection() executed in $time milliseconds');
     totalDetectionTime += time;
     numberOfImageDetected++;
-    objDetect.forEach((element) {
-      print({"state" : "before correction",
-        "score": element?.score,
-        "className": element?.className,
-        "class": element?.classIndex,
-        "rect": {
-          "left": element?.rect.left,
-          "top": element?.rect.top,
-          "width": element?.rect.width,
-          "height": element?.rect.height,
-          "right": element?.rect.right,
-          "bottom": element?.rect.bottom,
-        },
-      });
-      var temp = element?.rect.top;
-      element?.rect.top = element.rect.left;
-      element?.rect.left = element.rect.bottom;
-      element?.rect.bottom = element.rect.right;
-      element?.rect.right = temp!;
+    // objDetect.forEach((element) {
+    //   print({"state" : "before correction",
+    //     "score": element?.score,
+    //     "className": element?.className,
+    //     "class": element?.classIndex,
+    //     "rect": {
+    //       "left": element?.rect.left,
+    //       "top": element?.rect.top,
+    //       "width": element?.rect.width,
+    //       "height": element?.rect.height,
+    //       "right": element?.rect.right,
+    //       "bottom": element?.rect.bottom,
+    //     },
+    //   });
+      // var temp = element?.rect.top;
+      // element?.rect.top = element.rect.left;
+      // element?.rect.left = element.rect.bottom;
+      // element?.rect.bottom = element.rect.right;
+      // element?.rect.right = temp!;
 
-      // symetry by y axis
-      element?.rect.left = 1 - element.rect.left;  
-      element?.rect.right = 1 - element.rect.right;
+      // // symetry by y axis
+      // element?.rect.left = 1 - element.rect.left;  
+      // element?.rect.right = 1 - element.rect.right;
 
-      temp = element?.rect.width;
-      element?.rect.width = element.rect.height;
-      element?.rect.height = temp!;
-    });
+      // temp = element?.rect.width;
+      // element?.rect.width = element.rect.height;
+      // element?.rect.height = temp!;
+    // });
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
       croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
@@ -455,6 +478,7 @@ class _DetectionPageState extends State<DetectionPage> {
                                     height: MediaQuery.of(context).size.height,
                                     width: MediaQuery.of(context).size.width,
                                     child: CameraPreview(cameraController))),
+                                    // child: Image.memory(processedImg ?? Uint8List(0)))),
             // text on the left with cpuFred and cpuTemp and FPS avg
             Positioned(
               top: 0,
