@@ -395,8 +395,8 @@ class _DetectionPageState extends State<DetectionPage> {
       {Color? boxesColor, bool showPercentage = true}) {
 
     return LayoutBuilder(builder: (context, constraints) {
-      debugPrint(
-          'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
+      // debugPrint(
+      //     'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
       double factorX = constraints.maxWidth;
       double factorY = constraints.maxHeight;
       return Stack(
