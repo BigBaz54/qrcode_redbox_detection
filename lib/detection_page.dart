@@ -187,6 +187,7 @@ class _DetectionPageState extends State<DetectionPage> {
     }
     final connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
+      print("No internet connection : can't send request");
       return;
     }
     http.post(
