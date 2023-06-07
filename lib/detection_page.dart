@@ -42,7 +42,7 @@ class _DetectionPageState extends State<DetectionPage> {
   late String authKey = widget.authKey;
   late String teamName = widget.teamName;
   List<ResultObjectDetection?> objDetect = [];
-  final platform = const MethodChannel('com.example.qrcode_redbox_detection');
+  Widget boundingBoxes = Container();
 
   int direction = 0;
   bool hasLocationPermission = false;
@@ -74,6 +74,7 @@ class _DetectionPageState extends State<DetectionPage> {
   Uint8List? processedImg;
   Uint8List? croppedImg;
 
+  final platform = const MethodChannel('com.example.qrcode_redbox_detection');
   bool isProcessing = false;
   YuvChannelling yuvChannelling = YuvChannelling();
 
@@ -101,6 +102,7 @@ class _DetectionPageState extends State<DetectionPage> {
   void startStreamDetection() {
     cameraController.startImageStream((CameraImage cameraImage) {
       if (!isProcessing) {
+        print('');
         isProcessing = true;
         bool detected = false;
         getHeading();
@@ -178,6 +180,8 @@ class _DetectionPageState extends State<DetectionPage> {
     //     },
     //   });
     // });
+    boundingBoxes = renderBoxesWithoutImage(objDetect, boxesColor: const Color.fromARGB(255, 68, 255, 0));
+
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
       croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
@@ -411,7 +415,7 @@ class _DetectionPageState extends State<DetectionPage> {
                   })
               ),
             ),
-            renderBoxesWithoutImage(objDetect, boxesColor: const Color.fromARGB(255, 68, 255, 0)),
+            boundingBoxes,
           ],
         ),
         floatingActionButton: FloatingActionButton(
