@@ -1,16 +1,14 @@
 // ignore_for_file: avoid_print
 
-import 'home_page.dart';
+import 'dart:core';
 import 'yuv_channeling.dart';
 import 'send_request.dart';
 
-import 'dart:core';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_pytorch/flutter_pytorch.dart';
 import 'package:flutter_pytorch/pigeon.dart';
+import 'home_page.dart';
 import 'package:flutter/services.dart';
 import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
@@ -83,7 +81,6 @@ class _DetectionPageState extends State<DetectionPage> {
   @override
   void initState() {
     super.initState();
-    clearCache();
     startCamera(direction);
   }
 
@@ -353,11 +350,6 @@ class _DetectionPageState extends State<DetectionPage> {
         ],
       );
     });
-  }
-
-  void clearCache() async {
-    final appDir = '${(await getTemporaryDirectory()).path}/com.example.qrcode_redbox_detection';
-    Directory(appDir).delete(recursive: true);
   }
 
   @override
