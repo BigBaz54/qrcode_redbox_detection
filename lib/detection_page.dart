@@ -1,14 +1,16 @@
 // ignore_for_file: avoid_print
 
-import 'dart:core';
+import 'home_page.dart';
 import 'yuv_channeling.dart';
 import 'send_request.dart';
 
+import 'dart:core';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_pytorch/flutter_pytorch.dart';
 import 'package:flutter_pytorch/pigeon.dart';
-import 'home_page.dart';
 import 'package:flutter/services.dart';
 import 'package:cpu_reader/cpu_reader.dart';
 import 'package:cpu_reader/cpuinfo.dart';
@@ -128,9 +130,11 @@ class _DetectionPageState extends State<DetectionPage> {
     bool detected = false;
     runObjectDetection(jpegImg).then((value) {
       detected = value;
-      isProcessing = false;
+      readQRCode(jpegImg).then((value) {
+        detected = detected || value;
+        isProcessing = false;
+      });
     });
-    // readQRCode(path).then((value) {detected = detected || value};);
     return detected;
   }
 
@@ -193,10 +197,14 @@ class _DetectionPageState extends State<DetectionPage> {
     return detected;
   }
 
-  Future<bool> readQRCode(path) async {
+  Future<bool> readQRCode(jpegImg) async {
     bool detected = false;
     final stopwatch = Stopwatch()..start();
-    Code? resultFromXFile = await zx.readBarcodeImagePathString(path);
+
+    String cachePath = (await getTemporaryDirectory()).path;
+    File imgFile = await File('$cachePath/readQrCode.jpg').writeAsBytes(jpegImg);
+
+    Code? resultFromXFile = await zx.readBarcodeImagePathString(imgFile.path);
     int time = stopwatch.elapsed.inMilliseconds;
     print('readQRCode() executed in $time milliseconds');
     totalQRCodeTime += time;
