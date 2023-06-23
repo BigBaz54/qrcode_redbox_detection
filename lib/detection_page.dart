@@ -128,12 +128,17 @@ class _DetectionPageState extends State<DetectionPage> {
 
   bool processImage(Uint8List jpegImg) {
     bool detected = false;
+    bool objectDetectionFinished = false;
+    bool qrCodeReadingFinished = false;
     runObjectDetection(jpegImg).then((value) {
-      detected = value;
-      readQRCode(jpegImg).then((value) {
-        detected = detected || value;
-        isProcessing = false;
-      });
+      detected = detected || value;
+      objectDetectionFinished = true;
+      isProcessing = !qrCodeReadingFinished;
+    });
+    readQRCode(jpegImg).then((value) {
+      detected = detected || value;
+      qrCodeReadingFinished = true;
+      isProcessing = !objectDetectionFinished;
     });
     return detected;
   }
