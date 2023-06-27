@@ -23,8 +23,9 @@ class _HomePageState extends State<HomePage> {
   final _picker = ImagePicker();
   late List<CameraDescription> cameras = widget.cameras;
   late ModelObjectDetection objectModel = widget.objectModel;
+  bool readQrcode = false;
   String robotName = '1_TER_BUNKER';
-  String url = 'https://webhook.site/6e99bb5c-a604-4de9-942c-59dfd0bb3f19';
+  String url = 'https://webhook.site/ae72f93c-0eef-4f9e-9f7f-9aaab19920a8';
   String authKey = '';
   String teamName = 'test';
 
@@ -76,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModel: objectModel, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
+                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModel: objectModel, readQrcode: readQrcode, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
                   );
                 },
                 child: const Text('Live detection'),
@@ -132,6 +133,19 @@ class _HomePageState extends State<HomePage> {
                     labelText: 'Auth key',
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
+                ),
+                // centered Checkbox to enable/disable QR code reading
+                Center(
+                  child: CheckboxListTile(
+                    title: const Text('QR code'),
+                    value: readQrcode,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        readQrcode = value!;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
                   ),
                 ),
               ]),)

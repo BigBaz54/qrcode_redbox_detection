@@ -22,10 +22,11 @@ import 'package:flutter_compass/flutter_compass.dart';
 
 class DetectionPage extends StatefulWidget {
 
-  const DetectionPage({required this.cameras, required this.objectModel, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
+  const DetectionPage({required this.cameras, required this.objectModel, required this.readQrcode, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
 
   final List<CameraDescription> cameras;
   final ModelObjectDetection objectModel;
+  final bool readQrcode;
   final String robotName;
   final String url;
   final String authKey;
@@ -39,6 +40,7 @@ class _DetectionPageState extends State<DetectionPage> {
   late List<CameraDescription> cameras = widget.cameras;
   late CameraController cameraController;
   late ModelObjectDetection objectModel = widget.objectModel;
+  late bool readQrcode = widget.readQrcode;
   late String robotName = widget.robotName;
   late String url = widget.url;
   late String authKey = widget.authKey;
@@ -135,11 +137,15 @@ class _DetectionPageState extends State<DetectionPage> {
       objectDetectionFinished = true;
       isProcessing = !qrCodeReadingFinished;
     });
-    readQRCode(jpegImg).then((value) {
-      detected = detected || value;
+    if (readQrcode) {
+      readQRCode(jpegImg).then((value) {
+        detected = detected || value;
+        qrCodeReadingFinished = true;
+        isProcessing = !objectDetectionFinished;
+      });
+    } else {
       qrCodeReadingFinished = true;
-      isProcessing = !objectDetectionFinished;
-    });
+    }
     return detected;
   }
 
