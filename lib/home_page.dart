@@ -137,6 +137,22 @@ class _HomePageState extends State<HomePage> {
                     contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   ),
                 ),
+                // model selection
+                const SizedBox(height: 5),
+                DropdownButton<ModelObjectDetection>(
+                  value: selectedModel,
+                  onChanged: (ModelObjectDetection? newValue) {
+                    setState(() {
+                      selectedModel = newValue!;
+                    });
+                  },
+                  items: objectModels.map((ModelObjectDetection model) {
+                    return DropdownMenuItem<ModelObjectDetection>(
+                      value: model,
+                      child: Text(model.name),
+                    );
+                  }).toList(),
+                ),
                 // centered Checkbox to enable/disable QR code reading
                 Center(
                   child: CheckboxListTile(

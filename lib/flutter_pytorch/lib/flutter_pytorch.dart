@@ -47,7 +47,7 @@ class FlutterPytorch {
 
   ///Sets pytorch object detection model (path and lables) and returns Model
   static Future<ModelObjectDetection> loadObjectDetectionModel(
-      String path, int numberOfClasses, int imageWidth, int imageHeight,
+      String path, int numberOfClasses, int imageWidth, int imageHeight, String name,
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
 
@@ -61,7 +61,7 @@ class FlutterPytorch {
         labels = await _getLabelsCsv(labelPath);
       }
     }
-    return ModelObjectDetection(index, imageWidth, imageHeight, labels);
+    return ModelObjectDetection(index, imageWidth, imageHeight, labels, name);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -255,9 +255,10 @@ class ModelObjectDetection {
   final int imageWidth;
   final int imageHeight;
   final List<String> labels;
+  final String name;
 
   ModelObjectDetection(
-      this._index, this.imageWidth, this.imageHeight, this.labels);
+      this._index, this.imageWidth, this.imageHeight, this.labels, this.name);
 
   ///predicts image and returns the supposed label belonging to it
   Future<List<ResultObjectDetection?>> getImagePrediction(

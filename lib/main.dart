@@ -33,11 +33,11 @@ Future loadModels() async {
   try {
     final List<ModelObjectDetection> objectModels = [];
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
-              "assets/models/v5s160_fit_within.torchscript", 1, 160, 160,
+              "assets/models/v5s160_fit_within.torchscript", 1, 160, 160, "v5s160",
               labelPath: "assets/labels/labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
-              "assets/models/v5s640.torchscript", 1, 640, 640,
-              labelPath: "assets/labels/labels.txt"));
+              "assets/models/old.torchscript", 1, 640, 640, "v5s640",
+              labelPath: "assets/labels/old_labels.txt"));
     return objectModels;
   } catch (e) {
     if (e is PlatformException) {
