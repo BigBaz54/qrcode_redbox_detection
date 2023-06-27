@@ -6,15 +6,15 @@ import 'package:flutter_pytorch/flutter_pytorch.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<CameraDescription> cameras = await availableCameras();
-  final ModelObjectDetection model = await loadModel();
-  runApp(MyApp(cameras: cameras, objectModel: model));
+  final List<ModelObjectDetection> models = await loadModels();
+  runApp(MyApp(cameras: cameras, objectModels: models));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
+  const MyApp({required this.cameras, required this.objectModels, Key? key}) : super(key: key);
 
   final List<CameraDescription> cameras;
-  final ModelObjectDetection objectModel;
+  final List<ModelObjectDetection> objectModels;
 
   @override
   Widget build(BuildContext context) {
@@ -23,19 +23,22 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: HomePage(cameras: cameras, objectModel: objectModel),
+      home: HomePage(cameras: cameras, objectModels: objectModels, selectedModel: objectModels[0]),
     );
   }
 
 }
 
-Future loadModel() async {
-  String pathObjectDetectionModel = "assets/models/v5s160_fit_within.torchscript";
+Future loadModels() async {
   try {
-    final ModelObjectDetection objectModel = await FlutterPytorch.loadObjectDetectionModel(
-              pathObjectDetectionModel, 1, 160, 160,
-              labelPath: "assets/labels/labels.txt");
-    return objectModel;
+    final List<ModelObjectDetection> objectModels = [];
+    objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
+              "assets/models/v5s160_fit_within.torchscript", 1, 160, 160,
+              labelPath: "assets/labels/labels.txt"));
+    objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
+              "assets/models/v5s640.torchscript", 1, 640, 640,
+              labelPath: "assets/labels/labels.txt"));
+    return objectModels;
   } catch (e) {
     if (e is PlatformException) {
       print("Only supported for android, Error is $e");

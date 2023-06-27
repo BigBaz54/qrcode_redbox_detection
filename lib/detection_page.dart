@@ -22,10 +22,11 @@ import 'package:flutter_compass/flutter_compass.dart';
 
 class DetectionPage extends StatefulWidget {
 
-  const DetectionPage({required this.cameras, required this.objectModel, required this.readQrcode, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
+  const DetectionPage({required this.cameras, required this.objectModels, required this.selectedModel, required this.readQrcode, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
 
   final List<CameraDescription> cameras;
-  final ModelObjectDetection objectModel;
+  final List<ModelObjectDetection> objectModels;
+  final ModelObjectDetection selectedModel;
   final bool readQrcode;
   final String robotName;
   final String url;
@@ -39,7 +40,8 @@ class DetectionPage extends StatefulWidget {
 class _DetectionPageState extends State<DetectionPage> {
   late List<CameraDescription> cameras = widget.cameras;
   late CameraController cameraController;
-  late ModelObjectDetection objectModel = widget.objectModel;
+  late List<ModelObjectDetection> objectModels = widget.objectModels;
+  late ModelObjectDetection selectedModel = widget.selectedModel;
   late bool readQrcode = widget.readQrcode;
   late String robotName = widget.robotName;
   late String url = widget.url;
@@ -172,9 +174,9 @@ class _DetectionPageState extends State<DetectionPage> {
   Future<bool> runObjectDetection(imageAsBytes) async {
     bool detected = false;
     final stopwatch = Stopwatch()..start();
-    objDetect = await objectModel.getImagePrediction(
+    objDetect = await selectedModel.getImagePrediction(
         imageAsBytes,
-        minimumScore: 0.6,
+        minimumScore: 0.2,
         IOUThershold: 0.6);
     int time = stopwatch.elapsed.inMilliseconds;
     print('runObjectDetection() executed in $time milliseconds');
@@ -382,7 +384,7 @@ class _DetectionPageState extends State<DetectionPage> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage(cameras: cameras, objectModel: objectModel)),
+                MaterialPageRoute(builder: (context) => HomePage(cameras: cameras, objectModels: objectModels, selectedModel: selectedModel)),
               );
             },
           ),

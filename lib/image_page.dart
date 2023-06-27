@@ -7,10 +7,11 @@ import 'home_page.dart';
 
 class ImagePage extends StatefulWidget {
 
-  const ImagePage({required this.image, required this.cameras, required this.objectModel, Key? key}) : super(key: key);
+  const ImagePage({required this.image, required this.cameras, required this.objectModels, required this.selectedModel, Key? key}) : super(key: key);
   final File image;
   final List<CameraDescription> cameras;
-  final ModelObjectDetection objectModel;
+  final List<ModelObjectDetection> objectModels;
+  final ModelObjectDetection selectedModel;
 
   @override
   State<ImagePage> createState() => _ImagePageState();
@@ -18,12 +19,13 @@ class ImagePage extends StatefulWidget {
 
 class _ImagePageState extends State<ImagePage> {
   late List<CameraDescription> cameras = widget.cameras;
-  late ModelObjectDetection objectModel = widget.objectModel;
+  late List<ModelObjectDetection> objectModels = widget.objectModels;
+  late ModelObjectDetection selectedModel = widget.selectedModel;
   late File image = widget.image;
   List<ResultObjectDetection?> objDetect = [];
 
   Future runObjectDetection() async {
-    objDetect = await objectModel.getImagePrediction(
+    objDetect = await selectedModel.getImagePrediction(
         await image.readAsBytes(),
         minimumScore: 0.3,
         IOUThershold: 0.5);
@@ -57,7 +59,7 @@ class _ImagePageState extends State<ImagePage> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage(cameras: cameras, objectModel: objectModel)),
+                MaterialPageRoute(builder: (context) => HomePage(cameras: cameras, objectModels: objectModels, selectedModel: selectedModel)),
               );
             },
           ),

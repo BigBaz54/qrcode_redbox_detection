@@ -9,20 +9,22 @@ import 'image_page.dart';
 import 'package:flutter_pytorch/flutter_pytorch.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({required this.cameras, required this.objectModel, Key? key}) : super(key: key);
+  const HomePage({required this.cameras, required this.objectModels, Key? key, required this.selectedModel}) : super(key: key);
   
   @override
   State<HomePage> createState() => _HomePageState();
 
   final List<CameraDescription> cameras;
-  final ModelObjectDetection objectModel;
+  final List<ModelObjectDetection> objectModels;
+  final ModelObjectDetection selectedModel;
 }
 
 class _HomePageState extends State<HomePage> {
   File? _image;
   final _picker = ImagePicker();
   late List<CameraDescription> cameras = widget.cameras;
-  late ModelObjectDetection objectModel = widget.objectModel;
+  late List<ModelObjectDetection> objectModels = widget.objectModels;
+  late ModelObjectDetection selectedModel = objectModels[0];
   bool readQrcode = false;
   String robotName = '1_TER_BUNKER';
   String url = 'https://webhook.site/ae72f93c-0eef-4f9e-9f7f-9aaab19920a8';
@@ -77,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModel: objectModel, readQrcode: readQrcode, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
+                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModels: objectModels, selectedModel: selectedModel, readQrcode: readQrcode, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
                   );
                 },
                 child: const Text('Live detection'),
@@ -163,7 +165,7 @@ class _HomePageState extends State<HomePage> {
     }
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => ImagePage(cameras: cameras, image: _image!, objectModel: objectModel)),
+      MaterialPageRoute(builder: (context) => ImagePage(cameras: cameras, image: _image!, objectModels: objectModels, selectedModel: selectedModel)),
     );
   }
 
@@ -174,7 +176,7 @@ class _HomePageState extends State<HomePage> {
     }
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => ImagePage(cameras: cameras, image: _image!, objectModel: objectModel)),
+      MaterialPageRoute(builder: (context) => ImagePage(cameras: cameras, image: _image!, objectModels: objectModels, selectedModel: selectedModel)),
     );
   }
   
