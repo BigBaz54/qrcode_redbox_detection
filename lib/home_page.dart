@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('   Read QR code'),
+                    const Text('   Read QR codes'),
                     Checkbox(
                       value: readQrcode,
                       onChanged: (bool? value) {
