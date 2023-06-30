@@ -434,20 +434,21 @@ class _DetectionPageState extends State<DetectionPage> {
               ),
             ),
             if (detectionOverview)
-              Positioned(
-                top: 16*8,
-                left: 0,
-                child: SizedBox(
-                  height: 100,
-                  width: 100,
-                  child: Image.memory(
-                    croppedImg ?? Uint8List(0),
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.search, size: 50, color: Colors.grey);
-                    }
-                  )
+              if (croppedImg != null)
+                Positioned(
+                  top: 16*8,
+                  left: 0,
+                  child: SizedBox(
+                    height: 100,
+                    width: 100,
+                    child: Image.memory(
+                      croppedImg!,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.search, size: 50, color: Colors.grey);
+                      }
+                    )
+                  ),
                 ),
-              ),
             boundingBoxes,
           ],
         ),
