@@ -22,12 +22,14 @@ import 'package:flutter_compass/flutter_compass.dart';
 
 class DetectionPage extends StatefulWidget {
 
-  const DetectionPage({required this.cameras, required this.objectModels, required this.selectedModel, required this.readQrcode, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
+  const DetectionPage({required this.cameras, required this.objectModels, required this.selectedModel, required this.readQrcode, required this.sendRequests, required this.detectionOverview, required this.robotName, required this.url, required this.authKey, required this.teamName, Key? key}) : super(key: key);
 
   final List<CameraDescription> cameras;
   final List<ModelObjectDetection> objectModels;
   final ModelObjectDetection selectedModel;
   final bool readQrcode;
+  final bool sendRequests;
+  final bool detectionOverview;
   final String robotName;
   final String url;
   final String authKey;

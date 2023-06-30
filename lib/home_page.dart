@@ -26,6 +26,8 @@ class _HomePageState extends State<HomePage> {
   late List<ModelObjectDetection> objectModels = widget.objectModels;
   late ModelObjectDetection selectedModel = objectModels[0];
   bool readQrcode = false;
+  bool sendRequests = false;
+  bool detectionOverview = false;
   String robotName = '1_TER_BUNKER';
   String url = 'https://webhook.site/ae72f93c-0eef-4f9e-9f7f-9aaab19920a8';
   String authKey = '';
@@ -79,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModels: objectModels, selectedModel: selectedModel, readQrcode: readQrcode, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
+                    MaterialPageRoute(builder: (context) => DetectionPage(cameras: cameras, objectModels: objectModels, selectedModel: selectedModel, readQrcode: readQrcode, sendRequests: sendRequests, detectionOverview: detectionOverview, robotName: robotName, url: url, authKey: authKey, teamName: teamName,)),
                   );
                 },
                 child: const Text('Live detection'),
@@ -153,18 +155,49 @@ class _HomePageState extends State<HomePage> {
                     );
                   }).toList(),
                 ),
-                // centered Checkbox to enable/disable QR code reading
-                Center(
-                  child: CheckboxListTile(
-                    title: const Text('QR code'),
-                    value: readQrcode,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        readQrcode = value!;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
-                  ),
+                // 3 centered Checkboxes to enable/disable QR code reading, renquest sending and detection overview
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('   Read QR code'),
+                    Checkbox(
+                      value: readQrcode,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          readQrcode = value!;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('   Send requests'),
+                    Checkbox(
+                      value: sendRequests,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          sendRequests = value!;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('   Detection overview'),
+                    Checkbox(
+                      value: detectionOverview,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          detectionOverview = value!;
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ]),)
             ],
