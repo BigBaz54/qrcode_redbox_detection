@@ -176,7 +176,7 @@ class _DetectionPageState extends State<DetectionPage> {
     final stopwatch = Stopwatch()..start();
     objDetect = await selectedModel.getImagePrediction(
         imageAsBytes,
-        minimumScore: 0.5,
+        minimumScore: 0.3,
         IOUThershold: 0.6);
     int time = stopwatch.elapsed.inMilliseconds;
     print('runObjectDetection() executed in $time milliseconds');
@@ -197,7 +197,7 @@ class _DetectionPageState extends State<DetectionPage> {
     //     },
     //   });
     // });
-    boundingBoxes = renderBoxesWithoutImage(objDetect, boxesColor: const Color.fromARGB(255, 68, 255, 0));
+    boundingBoxes = renderBoxesWithoutImage(objDetect);
 
     if (objDetect.isNotEmpty) {
       var firstElement = objDetect[0]!;
