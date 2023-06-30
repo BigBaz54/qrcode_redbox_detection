@@ -33,6 +33,9 @@ Future loadModels() async {
   try {
     final List<ModelObjectDetection> objectModels = [];
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
+              "assets/models/v5n160qr.torchscript", 2, 160, 160, "v5n160qr",
+              labelPath: "assets/labels/redbox_qr_labels.txt"));
+    objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
               "assets/models/v5s160qr.torchscript", 2, 160, 160, "v5s160qr",
               labelPath: "assets/labels/redbox_qr_labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
