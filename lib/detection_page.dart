@@ -176,7 +176,7 @@ class _DetectionPageState extends State<DetectionPage> {
     final stopwatch = Stopwatch()..start();
     objDetect = await selectedModel.getImagePrediction(
         imageAsBytes,
-        minimumScore: 0.3,
+        minimumScore: 0.5,
         IOUThershold: 0.6);
     int time = stopwatch.elapsed.inMilliseconds;
     print('runObjectDetection() executed in $time milliseconds');
