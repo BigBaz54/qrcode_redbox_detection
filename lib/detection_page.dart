@@ -45,6 +45,8 @@ class _DetectionPageState extends State<DetectionPage> {
   late List<ModelObjectDetection> objectModels = widget.objectModels;
   late ModelObjectDetection selectedModel = widget.selectedModel;
   late bool readQrcode = widget.readQrcode;
+  late bool sendRequests = widget.sendRequests;
+  late bool detectionOverview = widget.detectionOverview;
   late String robotName = widget.robotName;
   late String url = widget.url;
   late String authKey = widget.authKey;
@@ -113,13 +115,17 @@ class _DetectionPageState extends State<DetectionPage> {
         print('');
         isProcessing = true;
         bool detected = false;
-        getHeading();
-        getLocation();
+        if (sendRequests) {
+          getHeading();
+          getLocation();
+        }
         convertImage(cameraImage).then((value) {
           detected = processImage(value);
         });
-        if (detected) {
-          sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
+        if (sendRequests) {
+          if (detected) {
+            sendRequest(latitude, longitude, heading, url, teamName, authKey, robotName);
+          }
         }
         updateMetrics();
         setState(() {});
@@ -201,10 +207,12 @@ class _DetectionPageState extends State<DetectionPage> {
     // });
     boundingBoxes = renderBoxesWithoutImage(objDetect);
 
-    if (objDetect.isNotEmpty) {
-      var firstElement = objDetect[0]!;
-      croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
-      detected = true;
+    if (detectionOverview) {
+      if (objDetect.isNotEmpty) {
+        var firstElement = objDetect[0]!;
+        croppedImg = cropImage(imageAsBytes, firstElement.rect.left, firstElement.rect.top, firstElement.rect.width, firstElement.rect.height);
+        detected = true;
+      }
     }
 
     setState(() {
@@ -425,19 +433,21 @@ class _DetectionPageState extends State<DetectionPage> {
                 ),
               ),
             ),
-            Positioned(
-              top: 16*8,
-              left: 0,
-              child: SizedBox(
-                height: 100,
-                width: 100,
-                child: Image.memory(
-                  croppedImg ?? Uint8List(0),
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(Icons.search, size: 50, color: Colors.grey);
-                  })
+            if (detectionOverview)
+              Positioned(
+                top: 16*8,
+                left: 0,
+                child: SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.memory(
+                    croppedImg ?? Uint8List(0),
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.search, size: 50, color: Colors.grey);
+                    }
+                  )
+                ),
               ),
-            ),
             boundingBoxes,
           ],
         ),
