@@ -36,7 +36,7 @@ Future loadModels() async {
               "assets/models/yolov8s-pose.torchscript", 2, 640, 640, "v8s640-pose",
               labelPath: "assets/labels/redbox_labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
-              "assets/models/v5n160qr.torchscript", 2, 160, 160, "v5n160qr",
+              "assets/models/v5n160fin.torchscript", 2, 160, 160, "v5n160fin",
               labelPath: "assets/labels/redbox_qr_labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
               "assets/models/v5s160fin.torchscript", 2, 160, 160, "v5s160fin",
