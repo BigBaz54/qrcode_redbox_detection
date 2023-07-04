@@ -20,17 +20,21 @@ public class PrePostProcessor {
     float[] NO_MEAN_RGB = new float[] {0.0f, 0.0f, 0.0f};
     float[] NO_STD_RGB = new float[] {1.0f, 1.0f, 1.0f};
 
-    int mNumberOfClasses = 17;
+    int mNumberOfClasses = 80;
 
 
     // model output is of size 25200*(num_of_class+5)
     int mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
-    int mOutputColumn = (mNumberOfClasses+5); // left, top, right, bottom, score and 80 class probability
+    int mOutputColumn = (mNumberOfClasses+5); // left, top, right, bottom, score and n class probability
     float mScoreThreshold = 0.30f; // score above which a detection is generated
     float mIOUThreshold = 0.30f; // IOU thershold
     int mImageWidth = 640;
     int mImageHeight = 640;
     int mNmsLimit = 15;
+    int[] strides = new int[]{8, 16, 32};
+    int nbPredictionsPerGrid = 3;
+    int nbPredictionsTotal = 25200;
+    int sizeOfPrediction = 5 + mNumberOfClasses;
 
     static String[] mClasses;
 
@@ -42,20 +46,16 @@ public class PrePostProcessor {
     }
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
         // to handle different model image size
-        switch (imageWidth) {
-            case 640:
-                mOutputRow = 25200;
-                break;
-            case 160:
-                mOutputRow = 945;
-                break;
-            default:
-                mOutputRow = 25200;
-        }
-        mNumberOfClasses=numberOfClasses;
-        mOutputColumn = (mNumberOfClasses+5);
+        strides = new int[]{8, 16, 32};
+        nbPredictionsPerGrid = 3;
+        nbPredictionsTotal = 
+                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerGrid +
+                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerGrid +
+                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerGrid;
+        sizeOfPrediction = 5 + numberOfClasses;
         mImageWidth=imageWidth;
         mImageHeight=imageHeight;
+        mNumberOfClasses=numberOfClasses;
     }
     // The two methods nonMaxSuppression and IOU below are ported from https://github.com/hollance/YOLO-CoreML-MPSNNGraph/blob/master/Common/Helpers.swift
     /**
@@ -71,7 +71,7 @@ public class PrePostProcessor {
         // Do an argsort on the confidence scores, from high to low.
         Collections.sort(boxes,
                 (o2, o1) -> o1.getScore().compareTo(o2.getScore()));
-        //Log.i("PytorchLitePlugin","first score after sorting  "+boxes.get(0).getScore());
+        // Log.i("PytorchLitePlugin","first score after sorting  "+boxes.get(0).getScore());
         ArrayList<Pigeon.ResultObjectDetection> selected = new ArrayList<>();
         boolean[] active = new boolean[boxes.size()];
         Arrays.fill(active, true);
@@ -132,17 +132,12 @@ public class PrePostProcessor {
     }
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
-        // Log.i("PytorchLitePlugin","output length "+String.valueOf(outputs.length));
-        // Log.i("PytorchLitePlugin","original output row "+String.valueOf(mOutputRow));
-        // Log.i("PytorchLitePlugin","output column "+String.valueOf(mOutputColumn));
-        // Log.i("PytorchLitePlugin","my output row "+String.valueOf(outputs.length/ (mOutputColumn+4)));
-        for (int i = 0; i< mOutputRow; i++) {
-            //Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
-            if (outputs[i* mOutputColumn +4] > mScoreThreshold) {
-                float x = outputs[i* mOutputColumn];
-                float y = outputs[i* mOutputColumn +1];
-                float w = outputs[i* mOutputColumn +2];
-                float h = outputs[i* mOutputColumn +3];
+        for (int i = 0; i < nbPredictionsTotal; i++) {
+            if (outputs[i * sizeOfPrediction + 4] > mScoreThreshold) {
+                float x = outputs[i * sizeOfPrediction];
+                float y = outputs[i * sizeOfPrediction + 1];
+                float w = outputs[i * sizeOfPrediction + 2];
+                float h = outputs[i * sizeOfPrediction + 3];
 
 
                 float left =  (x - w/2);
@@ -150,12 +145,11 @@ public class PrePostProcessor {
                 float right =  (x + w/2);
                 float bottom = (y + h/2);
 
-                //Log.i("PytorchLitePlugin","i* mOutputColumn +4="+outputs[i* mOutputColumn +4]+",outputs[i* mOutputColumn +5] "+outputs[i* mOutputColumn +5]);
-                float max = outputs[i* mOutputColumn +5];
+                float max = outputs[i* sizeOfPrediction + 5]; // 5 is the offset of the first class.
                 int cls = 0;
-                for (int j = 0; j < mOutputColumn -5; j++) {
-                    if (outputs[i* mOutputColumn +5+j] > max) {
-                        max = outputs[i* mOutputColumn +5+j];
+                for (int j = 0; j < mNumberOfClasses; j++) {
+                    if (outputs[i * sizeOfPrediction + 5 + j] > max) {
+                        max = outputs[i * sizeOfPrediction + 5 + j];
                         cls = j;
                     }
                 }
@@ -174,7 +168,7 @@ public class PrePostProcessor {
                 ).setRight(
                         getFloatAsDouble(right/mImageWidth)
                 ).build();
-                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i* mOutputColumn +4])).setRect(rect).build();
+                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * sizeOfPrediction + 4])).setRect(rect).build();
 
                 results.add(result);
 
