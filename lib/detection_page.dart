@@ -435,18 +435,19 @@ class _DetectionPageState extends State<DetectionPage> {
             ),
             // text on the right with qrCode information
             // max width = 2/3 
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                width: MediaQuery.of(context).size.width*58/90-1,
-                child: Text(
-                  "Nature: $nature\nIdentidiant: $identifiant\nRayon de neutralisation : $rayonNeutralisation\nDésactivable à distance: $desactivableDistance\nCode de désactivation: $codeDesactivation\nDésactivable au contact: $desactivableContact\nDivers: $divers",
-                  style: const TextStyle(color: Colors.white),
+            if (readQrcode)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.black.withOpacity(0.5),
+                  width: MediaQuery.of(context).size.width*58/90-1,
+                  child: Text(
+                    "Nature: $nature\nIdentidiant: $identifiant\nRayon de neutralisation : $rayonNeutralisation\nDésactivable à distance: $desactivableDistance\nCode de désactivation: $codeDesactivation\nDésactivable au contact: $desactivableContact\nDivers: $divers",
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
             if (detectionOverview)
               if (croppedImg != null)
                 Positioned(
