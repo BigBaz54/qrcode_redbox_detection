@@ -32,7 +32,7 @@ public class PrePostProcessor {
     int mImageHeight = 640;
     int mNmsLimit = 15;
     int[] strides = new int[]{8, 16, 32};
-    int nbPredictionsPerGrid = 3;
+    int nbPredictionsPerCell = 3;
     int nbPredictionsTotal = 25200;
     int sizeOfPrediction = 5 + mNumberOfClasses;
 
@@ -47,11 +47,11 @@ public class PrePostProcessor {
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
         // to handle different model image size
         strides = new int[]{8, 16, 32};
-        nbPredictionsPerGrid = 3;
+        nbPredictionsPerCell = 3;
         nbPredictionsTotal = 
-                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerGrid +
-                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerGrid +
-                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerGrid;
+                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerCell +
+                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerCell +
+                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerCell;
         sizeOfPrediction = 5 + numberOfClasses;
         mImageWidth=imageWidth;
         mImageHeight=imageHeight;
