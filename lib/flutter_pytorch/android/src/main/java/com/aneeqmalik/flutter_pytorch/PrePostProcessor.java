@@ -141,7 +141,8 @@ public class PrePostProcessor {
         // Log.i("PytorchLitePlugin","number of detection (predicted) " + String.valueOf(nbPredictionsTotal));
         // Log.i("PytorchLitePlugin","number of detection (actual) " + String.valueOf(outputs.length / sizeOfPrediction));
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
-        if (modelType.equals("v5")) {
+        if (modelType.equals("v5 or v8-pose")) {
+            // v5 models (v8-pose has sizeOfPrediction = 56 and nbPredictionsPerCell = 1)
             nbPredictionsTotal = 
                 mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV5 +
                 mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV5 +
@@ -187,6 +188,7 @@ public class PrePostProcessor {
                 }
             }
         } else {
+            // v8 models
             nbPredictionsTotal = 
                 mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV8 +
                 mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV8 +

@@ -235,12 +235,12 @@ public class FlutterPytorchPlugin implements FlutterPlugin, Pigeon.ModelApi {
         try {
             final Tensor imageInputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, prePostProcessor.NO_MEAN_RGB, prePostProcessor.NO_STD_RGB);
             Tensor imageOutputTensor = null;
-            String modelType = "v5";
+            String modelType = "v5 or v8-pose";
             try {
-                // for v5 models
+                // for v5 models or v8-pose models
                 IValue[] outputTuple  = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
                 imageOutputTensor = outputTuple[0].toTensor();
-                modelType = "v5";
+                modelType = "v5 or v8-pose";
             } catch (Exception e) {
                 // for v8 models
                 imageOutputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
