@@ -33,9 +33,6 @@ Future loadModels() async {
   try {
     final List<ModelObjectDetection> objectModels = [];
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
-              "assets/models/yolov8s-pose.torchscript", 2, 640, 640, "v8s640-pose",
-              labelPath: "assets/labels/redbox_labels.txt"));
-    objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
               "assets/models/v5n160fin.torchscript", 2, 160, 160, "v5n160fin",
               labelPath: "assets/labels/redbox_qr_labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
@@ -49,6 +46,9 @@ Future loadModels() async {
               labelPath: "assets/labels/redbox_labels.txt"));
     objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
               "assets/models/old.torchscript", 1, 640, 640, "v5s640",
+              labelPath: "assets/labels/redbox_labels.txt"));
+    objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
+              "assets/models/yolov8s-pose.torchscript", 2, 640, 640, "v8s640-pose",
               labelPath: "assets/labels/redbox_labels.txt"));
     return objectModels;
   } catch (e) {
