@@ -218,16 +218,6 @@ public class PrePostProcessor {
                     float top =  (y - h/2);
                     float right =  (x + w/2);
                     float bottom = (y + h/2);
-                    
-                    Log.i("PytorchLitePlugin","left " + String.valueOf(left));
-                    Log.i("PytorchLitePlugin","right " + String.valueOf(right));
-                    Log.i("PytorchLitePlugin","top " + String.valueOf(top));
-                    Log.i("PytorchLitePlugin","bottom " + String.valueOf(bottom));
-                    Log.i("PytorchLitePlugin","w " + String.valueOf(w));
-                    Log.i("PytorchLitePlugin","h " + String.valueOf(h));
-                    Log.i("PytorchLitePlugin","mImageWidth " + String.valueOf(mImageWidth));
-                    Log.i("PytorchLitePlugin","mImageHeight " + String.valueOf(mImageHeight));
-                    Log.i("PytorchLitePlugin"," ");
     
                     Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
                             getFloatAsDouble(left/mImageWidth)
