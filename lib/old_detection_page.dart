@@ -406,6 +406,16 @@ class _DetectionPageState extends State<DetectionPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Live detection'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 0.0),
+              child: Image.asset(
+                'assets/img/logo_loria.jpg',
+                fit: BoxFit.contain,
+                height: 32,
+              ),
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

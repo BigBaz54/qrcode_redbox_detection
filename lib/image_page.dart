@@ -54,6 +54,16 @@ class _ImagePageState extends State<ImagePage> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Processed image'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 0.0),
+              child: Image.asset(
+                'assets/img/logo_loria.jpg',
+                fit: BoxFit.contain,
+                height: 32,
+              ),
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
