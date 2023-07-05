@@ -32,7 +32,8 @@ public class PrePostProcessor {
     int mImageHeight = 640;
     int mNmsLimit = 15;
     int[] strides = new int[]{8, 16, 32};
-    int nbPredictionsPerCell = 3;
+    int nbPredictionsPerCellV5 = 3;
+    int nbPredictionsPerCellV8 = 1;
     int nbPredictionsTotal = 25200;
     int sizeOfPrediction = 5 + mNumberOfClasses;
 
@@ -47,11 +48,12 @@ public class PrePostProcessor {
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
         // to handle different model image size
         strides = new int[]{8, 16, 32};
-        nbPredictionsPerCell = 3;
+        nbPredictionsPerCellV5 = 3;
+        nbPredictionsPerCellV8 = 1;
         nbPredictionsTotal = 
-                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerCell +
-                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerCell +
-                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerCell;
+                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerCellV5 +
+                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerCellV5 +
+                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerCellV5;
         sizeOfPrediction = 5 + numberOfClasses;
         mImageWidth=imageWidth;
         mImageHeight=imageHeight;
@@ -130,50 +132,123 @@ public class PrePostProcessor {
     public static Double getFloatAsDouble(Float fValue) {
         return Double.valueOf(fValue.toString());
     }
-    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
+    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs, String modelType) {
+        // Log.i("PytorchLitePlugin","output length " + String.valueOf(outputs.length));
+        // for (int i = 2000; i < outputs.length; i++) {
+
+        //     Log.i("PytorchLitePlugin","output " + String.valueOf(i) + " " + String.valueOf(outputs[i]));
+        // }
+        // Log.i("PytorchLitePlugin","number of detection (predicted) " + String.valueOf(nbPredictionsTotal));
+        // Log.i("PytorchLitePlugin","number of detection (actual) " + String.valueOf(outputs.length / sizeOfPrediction));
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
-        for (int i = 0; i < nbPredictionsTotal; i++) {
-            if (outputs[i * sizeOfPrediction + 4] > mScoreThreshold) {
-                float x = outputs[i * sizeOfPrediction];
-                float y = outputs[i * sizeOfPrediction + 1];
-                float w = outputs[i * sizeOfPrediction + 2];
-                float h = outputs[i * sizeOfPrediction + 3];
+        if (modelType.equals("v5")) {
+            nbPredictionsTotal = 
+                mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV5 +
+                mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV5 +
+                mImageHeight/strides[2] * mImageWidth/strides[2] * nbPredictionsPerCellV5;
+            sizeOfPrediction = 5 + mNumberOfClasses;
+            for (int i = 0; i < nbPredictionsTotal; i++) {
+                if (outputs[i * sizeOfPrediction + 4] > mScoreThreshold) {
+                    float x = outputs[i * sizeOfPrediction];
+                    float y = outputs[i * sizeOfPrediction + 1];
+                    float w = outputs[i * sizeOfPrediction + 2];
+                    float h = outputs[i * sizeOfPrediction + 3];
+    
+                    float left =  (x - w/2);
+                    float top =  (y - h/2);
+                    float right =  (x + w/2);
+                    float bottom = (y + h/2);
+    
+                    float max = outputs[i* sizeOfPrediction + 5]; // 5 is the offset of the first class.
+                    int cls = 0;
+                    for (int j = 0; j < mNumberOfClasses; j++) {
+                        if (outputs[i * sizeOfPrediction + 5 + j] > max) {
+                            max = outputs[i * sizeOfPrediction + 5 + j];
+                            cls = j;
+                        }
+                    }
+    
+                    Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
+                            getFloatAsDouble(left/mImageWidth)
+                    ).setTop(
+                            getFloatAsDouble(top/mImageHeight)
+                    ).setWidth(
+                            getFloatAsDouble(w/mImageWidth)
+                    ).setHeight(
+                            getFloatAsDouble(h/mImageHeight)
+                    ).setBottom(
+                            getFloatAsDouble(bottom/mImageHeight)
+                    ).setRight(
+                            getFloatAsDouble(right/mImageWidth)
+                    ).build();
+                    Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * sizeOfPrediction + 4])).setRect(rect).build();
+    
+                    results.add(result);
+                }
+            }
+        } else {
+            nbPredictionsTotal = 
+                mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV8 +
+                mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV8 +
+                mImageHeight/strides[2] * mImageWidth/strides[2] * nbPredictionsPerCellV8;
+            sizeOfPrediction = 4 + mNumberOfClasses;
 
-
-                float left =  (x - w/2);
-                float top =  (y - h/2);
-                float right =  (x + w/2);
-                float bottom = (y + h/2);
-
-                float max = outputs[i* sizeOfPrediction + 5]; // 5 is the offset of the first class.
+            for (int i = 0; i < nbPredictionsTotal; i++) {
+                float max = outputs[4 * nbPredictionsTotal + i]; // the first class scores are between index 4*nbPredictionsTotal and 5*nbPredictionsTotal
                 int cls = 0;
                 for (int j = 0; j < mNumberOfClasses; j++) {
-                    if (outputs[i * sizeOfPrediction + 5 + j] > max) {
-                        max = outputs[i * sizeOfPrediction + 5 + j];
+                    if (outputs[(4 + j) * nbPredictionsTotal + i] > max) {
+                        max = outputs[(4 + j) * nbPredictionsTotal + i];
                         cls = j;
                     }
                 }
 
+                // the max of the class scores is used as the score of the detection.
+                if (max > mScoreThreshold) {
+                    // coordinates of the center of the box
+                    float x = outputs[i];
+                    float y = outputs[i + 1 * nbPredictionsTotal];
 
-                Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
-                        getFloatAsDouble(left/mImageWidth)
-                ).setTop(
-                        getFloatAsDouble(top/mImageHeight)
-                ).setWidth(
-                        getFloatAsDouble(w/mImageWidth)
-                ).setHeight(
-                        getFloatAsDouble(h/mImageHeight)
-                ).setBottom(
-                        getFloatAsDouble(bottom/mImageHeight)
-                ).setRight(
-                        getFloatAsDouble(right/mImageWidth)
-                ).build();
-                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * sizeOfPrediction + 4])).setRect(rect).build();
-
-                results.add(result);
-
+                    // width and height of the box
+                    float w = outputs[i + 2 * nbPredictionsTotal];
+                    float h = outputs[i + 3 * nbPredictionsTotal];
+    
+                    // coordinates of the corners of the box
+                    float left =  (x - w/2);
+                    float top =  (y - h/2);
+                    float right =  (x + w/2);
+                    float bottom = (y + h/2);
+                    
+                    Log.i("PytorchLitePlugin","left " + String.valueOf(left));
+                    Log.i("PytorchLitePlugin","right " + String.valueOf(right));
+                    Log.i("PytorchLitePlugin","top " + String.valueOf(top));
+                    Log.i("PytorchLitePlugin","bottom " + String.valueOf(bottom));
+                    Log.i("PytorchLitePlugin","w " + String.valueOf(w));
+                    Log.i("PytorchLitePlugin","h " + String.valueOf(h));
+                    Log.i("PytorchLitePlugin","mImageWidth " + String.valueOf(mImageWidth));
+                    Log.i("PytorchLitePlugin","mImageHeight " + String.valueOf(mImageHeight));
+                    Log.i("PytorchLitePlugin"," ");
+    
+                    Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
+                            getFloatAsDouble(left/mImageWidth)
+                    ).setTop(
+                            getFloatAsDouble(top/mImageHeight)
+                    ).setWidth(
+                            getFloatAsDouble(w/mImageWidth)
+                    ).setHeight(
+                            getFloatAsDouble(h/mImageHeight)
+                    ).setBottom(
+                            getFloatAsDouble(bottom/mImageHeight)
+                    ).setRight(
+                            getFloatAsDouble(right/mImageWidth)
+                    ).build();
+                    Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(max)).setRect(rect).build();
+    
+                    results.add(result);
+                }
             }
         }
+
 
         // Log.i("PytorchLitePlugin","result length before processing "+String.valueOf(results.size()));
         return nonMaxSuppression(results);

@@ -234,15 +234,24 @@ public class FlutterPytorchPlugin implements FlutterPlugin, Pigeon.ModelApi {
 
         try {
             final Tensor imageInputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, prePostProcessor.NO_MEAN_RGB, prePostProcessor.NO_STD_RGB);
+            Tensor imageOutputTensor = null;
+            String modelType = "v5";
+            try {
+                // for v5 models
+                IValue[] outputTuple  = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
+                imageOutputTensor = outputTuple[0].toTensor();
+                modelType = "v5";
+            } catch (Exception e) {
+                // for v8 models
+                imageOutputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
+                modelType = "v8";
+            }
 
-            IValue[] outputTuple  = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
-
-            final Tensor outputTensor = outputTuple[0].toTensor();
-            final float[] outputs = outputTensor.getDataAsFloatArray();
+            final float[] outputs = imageOutputTensor.getDataAsFloatArray();
 
 
 
-            final ArrayList<Pigeon.ResultObjectDetection> results = prePostProcessor.outputsToNMSPredictions(outputs);
+            final ArrayList<Pigeon.ResultObjectDetection> results = prePostProcessor.outputsToNMSPredictions(outputs, modelType);
 
             result.success(results);
         }catch (Exception e){
