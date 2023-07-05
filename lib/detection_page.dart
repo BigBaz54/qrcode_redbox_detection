@@ -343,6 +343,9 @@ class _DetectionPageState extends State<DetectionPage> {
             } else {
               usedColor = boxesColor;
             }
+            if (direction == 1) {
+              re.rect.top = 1 - re.rect.bottom;
+            }
             // print({
             //   "left": re.rect.left.toDouble() * factorX,
             //   "top": re.rect.top.toDouble() * factorY,
