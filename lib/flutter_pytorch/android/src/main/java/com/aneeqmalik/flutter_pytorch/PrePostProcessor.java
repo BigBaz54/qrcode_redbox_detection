@@ -20,7 +20,7 @@ public class PrePostProcessor {
     float[] NO_MEAN_RGB = new float[] {0.0f, 0.0f, 0.0f};
     float[] NO_STD_RGB = new float[] {1.0f, 1.0f, 1.0f};
 
-    int mNumberOfClasses = 80;
+    int mNumberOfClasses;
 
 
     // model output is of size 25200*(num_of_class+5)
@@ -34,8 +34,11 @@ public class PrePostProcessor {
     int[] strides = new int[]{8, 16, 32};
     int nbPredictionsPerCellV5 = 3;
     int nbPredictionsPerCellV8 = 1;
-    int nbPredictionsTotal = 25200;
-    int sizeOfPrediction = 5 + mNumberOfClasses;
+    int nbPredictionsTotalV5;
+    int nbPredictionsTotalV8;
+    int sizeOfPredictionV5 = 5 + mNumberOfClasses;
+    int sizeOfPredictionV8 = 4 + mNumberOfClasses;
+    String modelType;
 
     static String[] mClasses;
 
@@ -50,11 +53,16 @@ public class PrePostProcessor {
         strides = new int[]{8, 16, 32};
         nbPredictionsPerCellV5 = 3;
         nbPredictionsPerCellV8 = 1;
-        nbPredictionsTotal = 
+        nbPredictionsTotalV5 = 
                 imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerCellV5 +
                 imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerCellV5 +
                 imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerCellV5;
-        sizeOfPrediction = 5 + numberOfClasses;
+        nbPredictionsTotalV8 =
+                imageHeight/strides[0] * imageWidth/strides[0] * nbPredictionsPerCellV8 +
+                imageHeight/strides[1] * imageWidth/strides[1] * nbPredictionsPerCellV8 +
+                imageHeight/strides[2] * imageWidth/strides[2] * nbPredictionsPerCellV8;
+        sizeOfPredictionV5 = 5 + numberOfClasses;
+        sizeOfPredictionV8 = 4 + numberOfClasses;
         mImageWidth=imageWidth;
         mImageHeight=imageHeight;
         mNumberOfClasses=numberOfClasses;
@@ -132,7 +140,7 @@ public class PrePostProcessor {
     public static Double getFloatAsDouble(Float fValue) {
         return Double.valueOf(fValue.toString());
     }
-    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs, String modelType) {
+    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
         // Log.i("PytorchLitePlugin","output length " + String.valueOf(outputs.length));
         // for (int i = 2000; i < outputs.length; i++) {
 
@@ -140,31 +148,38 @@ public class PrePostProcessor {
         // }
         // Log.i("PytorchLitePlugin","number of detection (predicted) " + String.valueOf(nbPredictionsTotal));
         // Log.i("PytorchLitePlugin","number of detection (actual) " + String.valueOf(outputs.length / sizeOfPrediction));
+        Log.i("PytorchLitePlugin","output length " + String.valueOf(outputs.length));
+        Log.i("PytorchLitePlugin","number of detection V5 " + String.valueOf(nbPredictionsTotalV5));
+        Log.i("PytorchLitePlugin","size of predictions V5" + String.valueOf(sizeOfPredictionV5));
+        Log.i("PytorchLitePlugin","number of detection V8 " + String.valueOf(nbPredictionsTotalV8));
+        Log.i("PytorchLitePlugin","size of predictions V8" + String.valueOf(sizeOfPredictionV8));
+        if (nbPredictionsTotalV5 * sizeOfPredictionV5 == outputs.length) {
+            modelType = "v5";
+        } else if (nbPredictionsTotalV8 * sizeOfPredictionV8 == outputs.length) {
+            modelType = "v8";
+        } else {
+            modelType = "unknown";
+        }
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
-        if (modelType.equals("v5 or v8-pose")) {
+        if (modelType.equals("v5")) {
             // v5 models (v8-pose has sizeOfPrediction = 56 and nbPredictionsPerCell = 1)
-            nbPredictionsTotal = 
-                mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV5 +
-                mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV5 +
-                mImageHeight/strides[2] * mImageWidth/strides[2] * nbPredictionsPerCellV5;
-            sizeOfPrediction = 5 + mNumberOfClasses;
-            for (int i = 0; i < nbPredictionsTotal; i++) {
-                if (outputs[i * sizeOfPrediction + 4] > mScoreThreshold) {
-                    float x = outputs[i * sizeOfPrediction];
-                    float y = outputs[i * sizeOfPrediction + 1];
-                    float w = outputs[i * sizeOfPrediction + 2];
-                    float h = outputs[i * sizeOfPrediction + 3];
+            for (int i = 0; i < nbPredictionsTotalV5; i++) {
+                if (outputs[i * sizeOfPredictionV5 + 4] > mScoreThreshold) {
+                    float x = outputs[i * sizeOfPredictionV5];
+                    float y = outputs[i * sizeOfPredictionV5 + 1];
+                    float w = outputs[i * sizeOfPredictionV5 + 2];
+                    float h = outputs[i * sizeOfPredictionV5 + 3];
     
                     float left =  (x - w/2);
                     float top =  (y - h/2);
                     float right =  (x + w/2);
                     float bottom = (y + h/2);
     
-                    float max = outputs[i* sizeOfPrediction + 5]; // 5 is the offset of the first class.
+                    float max = outputs[i* sizeOfPredictionV5 + 5]; // 5 is the offset of the first class.
                     int cls = 0;
                     for (int j = 0; j < mNumberOfClasses; j++) {
-                        if (outputs[i * sizeOfPrediction + 5 + j] > max) {
-                            max = outputs[i * sizeOfPrediction + 5 + j];
+                        if (outputs[i * sizeOfPredictionV5 + 5 + j] > max) {
+                            max = outputs[i * sizeOfPredictionV5 + 5 + j];
                             cls = j;
                         }
                     }
@@ -182,25 +197,19 @@ public class PrePostProcessor {
                     ).setRight(
                             getFloatAsDouble(right/mImageWidth)
                     ).build();
-                    Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * sizeOfPrediction + 4])).setRect(rect).build();
+                    Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * sizeOfPredictionV5 + 4])).setRect(rect).build();
     
                     results.add(result);
                 }
             }
-        } else {
+        } else if (modelType.equals("v8")) {
             // v8 models
-            nbPredictionsTotal = 
-                mImageHeight/strides[0] * mImageWidth/strides[0] * nbPredictionsPerCellV8 +
-                mImageHeight/strides[1] * mImageWidth/strides[1] * nbPredictionsPerCellV8 +
-                mImageHeight/strides[2] * mImageWidth/strides[2] * nbPredictionsPerCellV8;
-            sizeOfPrediction = 4 + mNumberOfClasses;
-
-            for (int i = 0; i < nbPredictionsTotal; i++) {
-                float max = outputs[4 * nbPredictionsTotal + i]; // the first class scores are between index 4*nbPredictionsTotal and 5*nbPredictionsTotal
+            for (int i = 0; i < nbPredictionsTotalV8; i++) {
+                float max = outputs[4 * nbPredictionsTotalV8 + i]; // the first class scores are between index 4*nbPredictionsTotalV8 and 5*nbPredictionsTotalV8
                 int cls = 0;
                 for (int j = 0; j < mNumberOfClasses; j++) {
-                    if (outputs[(4 + j) * nbPredictionsTotal + i] > max) {
-                        max = outputs[(4 + j) * nbPredictionsTotal + i];
+                    if (outputs[(4 + j) * nbPredictionsTotalV8 + i] > max) {
+                        max = outputs[(4 + j) * nbPredictionsTotalV8 + i];
                         cls = j;
                     }
                 }
@@ -209,11 +218,11 @@ public class PrePostProcessor {
                 if (max > mScoreThreshold) {
                     // coordinates of the center of the box
                     float x = outputs[i];
-                    float y = outputs[i + 1 * nbPredictionsTotal];
+                    float y = outputs[i + 1 * nbPredictionsTotalV8];
 
                     // width and height of the box
-                    float w = outputs[i + 2 * nbPredictionsTotal];
-                    float h = outputs[i + 3 * nbPredictionsTotal];
+                    float w = outputs[i + 2 * nbPredictionsTotalV8];
+                    float h = outputs[i + 3 * nbPredictionsTotalV8];
     
                     // coordinates of the corners of the box
                     float left =  (x - w/2);
@@ -239,6 +248,8 @@ public class PrePostProcessor {
                     results.add(result);
                 }
             }
+        } else {
+            Log.i("PytorchLitePlugin","model type not supported");
         }
 
 
