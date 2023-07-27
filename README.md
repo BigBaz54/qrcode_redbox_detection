@@ -78,9 +78,13 @@ You can POST the detections to the server you want by giving the URL of the serv
 
 ## Screenshots
 Home page:
+![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/ce9996bb-ff3e-4951-a9a2-67daa7510b89)
 
 Model selection:
+![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/98fb6a3e-ce09-40c3-b0d0-da5f04e41aff)
 
 Metrics:
+![metriques](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/6465920e-208b-4767-93e5-1df70566ea3a)
 
 Inference:
+![160](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/3c14ceaa-71ba-41e3-96ef-dd179624986e)
