@@ -45,8 +45,8 @@ python export.py --weights your_model.pt --include torchscript --optimize --img 
 5. Add your model in the `loadModels` function in the `main.dart` file. Here is an example:
 ```dart
 objectModels.add(await FlutterPytorch.loadObjectDetectionModel(
-              "assets/models/your_model.torchscript", nb_classes, img_width, img_height, "name in the app",
-              labelPath: "assets/labels/your_labels.txt"));
+  "assets/models/your_model.torchscript", nb_classes, img_width, img_height, "name in the app",
+  labelPath: "assets/labels/your_labels.txt"));
 ```
 
 
