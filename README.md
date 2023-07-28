@@ -83,7 +83,7 @@ You can POST the detections to the server you want by giving the URL of the serv
 
 **Model selection**:
 
-![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/42941d38-99fb-405b-a455-7ffd85ce5fd4)
+![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/4d51acc9-a873-48a9-8308-c4364bcf225a)
 
 **Metrics**:
 
