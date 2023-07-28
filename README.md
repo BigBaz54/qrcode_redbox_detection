@@ -79,16 +79,17 @@ You can POST the detections to the server you want by giving the URL of the serv
 ## Screenshots
 **Home page**:
 
-![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/ce9996bb-ff3e-4951-a9a2-67daa7510b89)
+![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/210b573b-029b-4f23-ad9b-a2d7f31296fa)
 
 **Model selection**:
 
-![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/98fb6a3e-ce09-40c3-b0d0-da5f04e41aff)
+![image](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/42941d38-99fb-405b-a455-7ffd85ce5fd4)
 
 **Metrics**:
 
-![metriques](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/6465920e-208b-4767-93e5-1df70566ea3a)
+![metriques](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/7682945f-9f6c-4bcf-876e-1dc8020e7bc2)
 
 **Inference**:
 
-![160](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/3c14ceaa-71ba-41e3-96ef-dd179624986e)
+![160](https://github.com/BigBaz54/qrcode_redbox_detection/assets/96493391/5e9eaa90-c23f-45a9-a99b-0709b2736576)
+
